@@ -46,7 +46,7 @@ async function onSearch() {
       }
     });
 
-    renderCatalogs(data.catalog || {});
+    renderCatalogs(data.catalog || {}, data.permissions || {});
     renderList(data.items || []);
 
     if ((data.items || []).length === 0) {
@@ -59,14 +59,15 @@ async function onSearch() {
   }
 }
 
-function renderCatalogs(catalog) {
+function renderCatalogs(catalog, permissions) {
   const supervisors = catalog.supervisors || [];
   const areas = catalog.areas || [];
+  const onlyOwnHistory = Boolean(permissions && permissions.onlyOwnHistory);
 
   const currentSupervisor = filterSupervisor.value;
   const currentArea = filterArea.value;
 
-  filterSupervisor.innerHTML = '<option value="">Todos</option>';
+  filterSupervisor.innerHTML = onlyOwnHistory ? "" : '<option value="">Todos</option>';
   supervisors.forEach((item) => {
     const option = document.createElement("option");
     option.value = item.id;
@@ -82,8 +83,16 @@ function renderCatalogs(catalog) {
     filterArea.appendChild(option);
   });
 
-  if (currentSupervisor) {
-    filterSupervisor.value = currentSupervisor;
+  if (onlyOwnHistory) {
+    filterSupervisor.disabled = true;
+    if (supervisors[0]) {
+      filterSupervisor.value = supervisors[0].id;
+    }
+  } else {
+    filterSupervisor.disabled = false;
+    if (currentSupervisor) {
+      filterSupervisor.value = currentSupervisor;
+    }
   }
   if (currentArea) {
     filterArea.value = currentArea;
@@ -94,13 +103,16 @@ function renderList(items) {
   historyList.innerHTML = "";
 
   items.forEach((item) => {
+    const formattedDate = formatDateShort(item.fecha);
+    const formattedStartTime = formatTimeShort(item.horaInicio);
+
     const card = document.createElement("article");
     card.className = "history-card";
 
     card.innerHTML = `
       <div class="history-card-head">
         <strong>${item.areaName}</strong>
-        <small>${item.fecha} ${item.horaInicio}</small>
+        <small>${formattedDate} ${formattedStartTime}</small>
       </div>
       <p class="mb-1">Supervisor: ${item.supervisorName}</p>
       <p class="mb-2">Duracion: ${item.duracion || "En curso"}</p>
@@ -130,6 +142,15 @@ async function loadDetail(supervisionId) {
 function renderDetail(data) {
   const supervision = data.supervision || {};
   const answers = data.answers || [];
+  const formattedDate = formatDateShort(supervision.fecha);
+  const formattedStartTime = formatTimeShort(supervision.horaInicio);
+  const formattedEndTime = formatTimeShort(supervision.horaFin);
+  const formattedEndDateTime =
+    formattedEndTime === "-"
+      ? "-"
+      : formattedDate === "-"
+        ? formattedEndTime
+        : `${formattedDate} ${formattedEndTime}`;
 
   detailPanel.hidden = false;
 
@@ -139,8 +160,8 @@ function renderDetail(data) {
   summary.innerHTML = `
     <p><strong>Area:</strong> ${supervision.areaName || "-"}</p>
     <p><strong>Supervisor:</strong> ${supervision.supervisorName || "-"}</p>
-    <p><strong>Inicio:</strong> ${supervision.fecha || "-"} ${supervision.horaInicio || "-"}</p>
-    <p><strong>Fin:</strong> ${supervision.horaFin || "-"}</p>
+    <p><strong>Inicio:</strong> ${formattedDate} ${formattedStartTime}</p>
+    <p><strong>Fin:</strong> ${formattedEndDateTime}</p>
     <p><strong>Duracion:</strong> ${supervision.duracion || "-"}</p>
     <p><strong>GPS:</strong> ${supervision.gps || "-"}</p>
   `;
@@ -177,4 +198,59 @@ function setMessage(message, type) {
   if (type) {
     historyMessage.classList.add(type);
   }
+}
+
+function formatDateShort(dateValue) {
+  const raw = String(dateValue || "").trim();
+  if (!raw) {
+    return "-";
+  }
+
+  // Normaliza fechas tipo yyyy-MM-dd a formato fijo dd/MM/yyyy.
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    return `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
+  }
+
+  const parsed = new Date(raw);
+  if (isNaN(parsed.getTime())) {
+    return raw;
+  }
+
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = String(parsed.getFullYear());
+  return `${day}/${month}/${year}`;
+}
+
+function formatTimeShort(timeValue) {
+  const raw = String(timeValue || "").trim();
+  if (!raw) {
+    return "-";
+  }
+
+  // Caso directo: HH:mm o HH:mm:ss.
+  const direct = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (direct) {
+    const hh = String(direct[1]).padStart(2, "0");
+    const mm = direct[2];
+    return `${hh}:${mm}`;
+  }
+
+  // Extrae la hora cuando viene incrustada en textos largos.
+  const embedded = raw.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\b/);
+  if (embedded) {
+    const hh = String(embedded[1]).padStart(2, "0");
+    const mm = embedded[2];
+    return `${hh}:${mm}`;
+  }
+
+  const parsed = new Date(raw);
+  if (!isNaN(parsed.getTime())) {
+    const hh = String(parsed.getHours()).padStart(2, "0");
+    const mm = String(parsed.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+  }
+
+  return "-";
 }

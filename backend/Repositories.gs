@@ -22,7 +22,7 @@ function countTodaySupervisionsByUserId(userId, dateKey) {
 
   for (var i = 0; i < rows.length; i += 1) {
     var row = rows[i];
-    var rawDate = String(row[1] || "").trim();
+    var rawDate = normalizeSheetDateToKey(row[1]);
     var supervisor = String(row[5] || "").trim().toUpperCase();
 
     if (supervisor === userId && rawDate === dateKey) {
@@ -81,7 +81,7 @@ function findSupervisionById(supervisionId) {
     if (id === target) {
       return {
         id: id,
-        fecha: String(row[1] || "").trim(),
+        fecha: normalizeSheetDateToKey(row[1]),
         horaInicio: String(row[2] || "").trim(),
         horaFin: String(row[3] || "").trim(),
         duracion: String(row[4] || "").trim(),
@@ -199,7 +199,7 @@ function listSupervisionsWithFilters(filters) {
     var row = rows[i];
     var item = {
       id: String(row[0] || "").trim(),
-      fecha: String(row[1] || "").trim(),
+      fecha: normalizeSheetDateToKey(row[1]),
       horaInicio: String(row[2] || "").trim(),
       horaFin: String(row[3] || "").trim(),
       duracion: String(row[4] || "").trim(),
@@ -297,6 +297,39 @@ function mapQuestionsById() {
     map[item.id] = item;
   }
   return map;
+}
+
+function normalizeSheetDateToKey(value) {
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), "yyyy-MM-dd");
+  }
+
+  var raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  var mx = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mx) {
+    var day = Number(mx[1]);
+    var month = Number(mx[2]);
+    var year = Number(mx[3]);
+    var parsedMx = new Date(year, month - 1, day);
+    if (!isNaN(parsedMx.getTime())) {
+      return Utilities.formatDate(parsedMx, Session.getScriptTimeZone(), "yyyy-MM-dd");
+    }
+  }
+
+  var generic = new Date(raw);
+  if (!isNaN(generic.getTime())) {
+    return Utilities.formatDate(generic, Session.getScriptTimeZone(), "yyyy-MM-dd");
+  }
+
+  return raw;
 }
 
 function getDataRows(sheetName) {

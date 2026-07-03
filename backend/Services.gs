@@ -261,8 +261,9 @@ function buildEvidenceFileName(supervisionId, questionId) {
 function historySearchService(payload) {
   var session = decodeAndVerifyToken(payload.token);
   var filters = payload.filters || {};
+  var isSupervisor = String(session.role || "").toLowerCase() === "supervisor";
 
-  if (String(session.role || "").toLowerCase() === "supervisor") {
+  if (isSupervisor) {
     filters.supervisorId = session.userId;
   }
 
@@ -289,6 +290,12 @@ function historySearchService(payload) {
     return { id: key, name: usersMap[key].nombre };
   });
 
+  if (isSupervisor) {
+    supervisorOptions = supervisorOptions.filter(function (item) {
+      return String(item.id || "").toUpperCase() === String(session.userId || "").toUpperCase();
+    });
+  }
+
   var areaOptions = Object.keys(areasMap).map(function (key) {
     return { id: key, name: areasMap[key].area };
   });
@@ -302,6 +309,9 @@ function historySearchService(payload) {
     catalog: {
       supervisors: supervisorOptions,
       areas: areaOptions
+    },
+    permissions: {
+      onlyOwnHistory: isSupervisor
     },
     items: items
   };
