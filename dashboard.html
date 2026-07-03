@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard | SIPM Supervisiones</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Archivo:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/pages/dashboard.css" />
+  </head>
+  <body>
+    <main class="container-fluid px-3 py-3 dashboard-page">
+      <section class="surface dashboard-surface mx-auto">
+        <header class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <p class="eyebrow mb-1">Dashboard</p>
+            <h1 class="title-lg">Supervision industrial</h1>
+          </div>
+          <button id="logoutButton" class="btn btn-outline-dark btn-sm">Cerrar sesion</button>
+        </header>
+
+        <div class="card card-soft mb-3">
+          <div class="card-body">
+            <p class="meta mb-2">Supervisor</p>
+            <h2 id="supervisorName" class="title-md mb-2">-</h2>
+            <p id="currentDate" class="mb-1">Fecha: -</p>
+            <p id="todayCount" class="mb-0">Supervisiones hoy: -</p>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button id="scanQrBtn" class="btn btn-brand btn-lg">Escanear QR</button>
+          <button id="historyBtn" class="btn btn-dark btn-lg">Historial</button>
+        </div>
+
+        <div id="dashboardMessage" class="status-slot mt-3" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script type="module" src="js/pages/dashboardPage.js"></script>
+  </body>
+</html>

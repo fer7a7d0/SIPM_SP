@@ -1,0 +1,64 @@
+.surface {
+  max-width: 640px;
+}
+
+.dashboard-surface {
+  margin-top: 0.5rem;
+}
+
+.filters-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.history-card {
+  border: 1px solid #d7e1dd;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fbfdfc;
+}
+
+.history-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.history-card-head small {
+  color: #5f716c;
+}
+
+.detail-panel {
+  border: 1px solid #d7e1dd;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fcfa;
+}
+
+.detail-summary p {
+  margin-bottom: 0.3rem;
+}
+
+.detail-answer-list {
+  display: grid;
+  gap: 10px;
+}
+
+.detail-answer-item {
+  border: 1px solid #d7e1dd;
+  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .filters-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

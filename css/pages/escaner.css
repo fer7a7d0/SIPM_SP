@@ -1,0 +1,16 @@
+.dashboard-surface {
+  margin-top: 0.5rem;
+}
+
+#qrInput {
+  letter-spacing: 0.02em;
+}
+
+.qr-reader {
+  width: 100%;
+  min-height: 220px;
+  border: 2px dashed #c8d4d0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f7faf9;
+}

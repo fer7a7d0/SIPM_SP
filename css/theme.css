@@ -1,0 +1,39 @@
+.btn-brand {
+  background: linear-gradient(110deg, var(--brand), #0ca57f);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+.btn-brand:hover,
+.btn-brand:focus {
+  background: linear-gradient(110deg, var(--brand-700), var(--brand));
+  color: #ffffff;
+}
+
+.card-soft {
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(24, 35, 33, 0.08);
+}
+
+.entry-body {
+  overflow: hidden;
+}
+
+.entry-wrap {
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.entry-card {
+  width: min(100%, 460px);
+  text-align: center;
+  border-radius: 24px;
+  padding: 2rem 1.25rem;
+  color: #ffffff;
+  background: linear-gradient(155deg, #0a6f56, #0e8d6d 55%, #ff7a1a);
+  box-shadow: 0 18px 40px rgba(10, 111, 86, 0.35);
+}

@@ -1,0 +1,8 @@
+.dashboard-surface {
+  margin-top: 0.5rem;
+  padding: 1rem;
+}
+
+.dashboard-page .btn-lg {
+  min-height: 56px;
+}

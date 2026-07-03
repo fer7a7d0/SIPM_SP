@@ -1,0 +1,27 @@
+.dashboard-surface {
+  margin-top: 0.5rem;
+}
+
+.summary-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #d8e2de;
+  border-radius: 12px;
+  background: #fbfdfc;
+}
+
+.summary-item span {
+  color: #586a65;
+}
+
+.summary-item strong {
+  text-align: right;
+}

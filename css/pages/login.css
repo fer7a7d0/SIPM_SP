@@ -1,0 +1,16 @@
+.login-page {
+  display: grid;
+  align-items: center;
+}
+
+.login-surface {
+  margin-top: 2rem;
+  padding: 1.25rem;
+}
+
+@media (min-width: 576px) {
+  .login-surface {
+    margin-top: 3rem;
+    padding: 1.6rem;
+  }
+}

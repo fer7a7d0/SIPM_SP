@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Escaner QR | SIPM Supervisiones</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Archivo:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/pages/escaner.css" />
+  </head>
+  <body>
+    <main class="container-fluid px-3 py-3">
+      <section class="surface dashboard-surface mx-auto p-3">
+        <header class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <p class="eyebrow mb-1">Paso 1</p>
+            <h1 class="title-lg">Escanear codigo QR</h1>
+          </div>
+          <a class="btn btn-outline-dark btn-sm" href="dashboard.html">Volver</a>
+        </header>
+
+        <div class="mb-3">
+          <label for="qrInput" class="form-label">Codigo QR</label>
+          <input id="qrInput" type="text" class="form-control form-control-lg" placeholder="Escanea o pega el codigo" autocomplete="off" />
+        </div>
+
+        <div class="mb-3">
+          <div id="qrReader" class="qr-reader"></div>
+          <div class="d-grid gap-2 mt-2">
+            <button id="startCameraBtn" class="btn btn-outline-dark">Iniciar camara QR</button>
+            <button id="stopCameraBtn" class="btn btn-outline-secondary" disabled>Detener camara</button>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button id="validateQrBtn" class="btn btn-brand btn-lg">Validar y abrir supervision</button>
+        </div>
+
+        <div class="card card-soft mt-3">
+          <div class="card-body">
+            <p class="meta mb-1">GPS actual</p>
+            <p id="gpsStatus" class="mb-0">Pendiente de obtener ubicacion...</p>
+          </div>
+        </div>
+
+        <div id="scannerMessage" class="status-slot mt-3" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script type="module" src="js/pages/escanerPage.js"></script>
+  </body>
+</html>
