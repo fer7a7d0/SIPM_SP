@@ -13,8 +13,10 @@ const detailModal = document.getElementById("detailModal") || document.getElemen
 const detailBackdrop = document.getElementById("detailBackdrop");
 const closeDetailBtn = document.getElementById("closeDetailBtn");
 const detailBody = document.getElementById("detailBody");
+const HISTORY_STATE_KEY = "sipm_history_view_state";
 
 let session = null;
+let currentDetailSupervisionId = "";
 
 init();
 
@@ -28,13 +30,23 @@ async function init() {
   session = localSession;
 
   searchBtn.addEventListener("click", onSearch);
+  filterDate.addEventListener("change", () => saveCurrentState());
+  filterSupervisor.addEventListener("change", () => saveCurrentState());
+  filterArea.addEventListener("change", () => saveCurrentState());
+
   if (closeDetailBtn) {
     closeDetailBtn.addEventListener("click", closeDetailModal);
   }
   if (detailBackdrop) {
     detailBackdrop.addEventListener("click", closeDetailModal);
   }
+
+  window.addEventListener("pagehide", () => {
+    saveCurrentState();
+  });
+
   await loadCatalogs();
+  await restoreViewState();
   setMessage("Selecciona filtros y presiona Buscar para consultar el historial.", "");
 }
 
@@ -62,6 +74,7 @@ async function onSearch() {
 
     renderCatalogs(data.catalog || {}, data.permissions || {});
     renderList(data.items || []);
+    saveCurrentState({ hasSearch: true });
 
     if ((data.items || []).length === 0) {
       setMessage("No hay resultados con los filtros seleccionados.", "");
@@ -142,12 +155,15 @@ function renderList(items) {
 
 async function loadDetail(supervisionId) {
   try {
+    currentDetailSupervisionId = String(supervisionId || "").trim();
+
     const data = await getHistoryDetail({
       token: session.token,
       supervisionId
     });
 
     renderDetail(data);
+    saveCurrentState();
   } catch (error) {
     setMessage(error.message || "No se pudo cargar el detalle.", "error");
   }
@@ -201,6 +217,13 @@ function renderDetail(data) {
     `;
 
     list.appendChild(block);
+
+    const link = block.querySelector("a");
+    if (link) {
+      link.addEventListener("click", () => {
+        saveCurrentState();
+      });
+    }
   });
 
   detailBody.appendChild(list);
@@ -219,7 +242,79 @@ function closeDetailModal() {
     return;
   }
   detailModal.hidden = true;
+  currentDetailSupervisionId = "";
+  saveCurrentState();
   document.body.classList.remove("modal-open");
+}
+
+function getSavedState() {
+  try {
+    const raw = sessionStorage.getItem(HISTORY_STATE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveCurrentState(patch = {}) {
+  try {
+    const previous = getSavedState() || {};
+    const next = {
+      ...previous,
+      ...patch,
+      filters: {
+        fecha: filterDate.value || "",
+        supervisorId: filterSupervisor.value || "",
+        areaId: filterArea.value || ""
+      },
+      scrollY: window.scrollY || 0,
+      detailSupervisionId: currentDetailSupervisionId || "",
+      updatedAt: Date.now()
+    };
+    sessionStorage.setItem(HISTORY_STATE_KEY, JSON.stringify(next));
+  } catch (error) {
+    // Ignora errores de storage para no bloquear flujo principal.
+  }
+}
+
+async function restoreViewState() {
+  const state = getSavedState();
+  if (!state) {
+    return;
+  }
+
+  const filters = state.filters || {};
+  filterDate.value = String(filters.fecha || "");
+  if (filters.supervisorId) {
+    filterSupervisor.value = String(filters.supervisorId || "");
+  }
+  if (filters.areaId) {
+    filterArea.value = String(filters.areaId || "");
+  }
+
+  const shouldSearch = Boolean(state.hasSearch || filters.fecha || filters.supervisorId || filters.areaId || state.detailSupervisionId);
+  if (!shouldSearch) {
+    if (typeof state.scrollY === "number") {
+      window.scrollTo(0, state.scrollY);
+    }
+    return;
+  }
+
+  await onSearch();
+
+  if (state.detailSupervisionId) {
+    await loadDetail(String(state.detailSupervisionId));
+  }
+
+  if (typeof state.scrollY === "number") {
+    window.setTimeout(() => {
+      window.scrollTo(0, state.scrollY);
+    }, 0);
+  }
 }
 
 function setMessage(message, type) {
