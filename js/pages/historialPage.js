@@ -1,6 +1,6 @@
 import "../router.js";
 import { ROUTES } from "../config.js";
-import { getSession, verifySession } from "../services/authService.js";
+import { getSession } from "../services/authService.js";
 import { getHistoryCatalog, getHistoryDetail, searchHistory } from "../services/historyService.js";
 
 const filterDate = document.getElementById("filterDate");
@@ -23,11 +23,7 @@ async function init() {
     return;
   }
 
-  session = await verifySession();
-  if (!session) {
-    window.location.replace(ROUTES.login);
-    return;
-  }
+  session = localSession;
 
   searchBtn.addEventListener("click", onSearch);
   await loadCatalogs();
