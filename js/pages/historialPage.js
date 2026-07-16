@@ -9,7 +9,9 @@ const filterArea = document.getElementById("filterArea");
 const searchBtn = document.getElementById("searchBtn");
 const historyList = document.getElementById("historyList");
 const historyMessage = document.getElementById("historyMessage");
-const detailPanel = document.getElementById("detailPanel");
+const detailModal = document.getElementById("detailModal");
+const detailBackdrop = document.getElementById("detailBackdrop");
+const closeDetailBtn = document.getElementById("closeDetailBtn");
 const detailBody = document.getElementById("detailBody");
 
 let session = null;
@@ -26,6 +28,8 @@ async function init() {
   session = localSession;
 
   searchBtn.addEventListener("click", onSearch);
+  closeDetailBtn.addEventListener("click", closeDetailModal);
+  detailBackdrop.addEventListener("click", closeDetailModal);
   await loadCatalogs();
   setMessage("Selecciona filtros y presiona Buscar para consultar el historial.", "");
 }
@@ -158,7 +162,7 @@ function renderDetail(data) {
         ? formattedEndTime
         : `${formattedDate} ${formattedEndTime}`;
 
-  detailPanel.hidden = false;
+  openDetailModal();
 
   detailBody.innerHTML = "";
   const summary = document.createElement("div");
@@ -196,6 +200,16 @@ function renderDetail(data) {
   });
 
   detailBody.appendChild(list);
+}
+
+function openDetailModal() {
+  detailModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closeDetailModal() {
+  detailModal.hidden = true;
+  document.body.classList.remove("modal-open");
 }
 
 function setMessage(message, type) {

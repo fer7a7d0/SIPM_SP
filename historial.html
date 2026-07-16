@@ -45,14 +45,21 @@
 
         <div id="historyList" class="history-list"></div>
 
-        <section id="detailPanel" class="detail-panel mt-3" hidden>
-          <h2 class="title-md mb-2">Detalle de supervision</h2>
-          <div id="detailBody"></div>
-        </section>
-
         <div id="historyMessage" class="status-slot mt-3" aria-live="polite"></div>
       </section>
     </main>
+
+    <div id="detailModal" class="detail-modal" hidden>
+      <div id="detailBackdrop" class="detail-modal-backdrop"></div>
+      <section class="detail-modal-panel" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+        <header class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <h2 id="detailModalTitle" class="title-md mb-0">Detalle de supervision</h2>
+          <button id="closeDetailBtn" type="button" class="btn btn-outline-dark btn-sm">Cerrar</button>
+        </header>
+        <div id="detailBody"></div>
+      </section>
+    </div>
+
     <script type="module" src="js/pages/historialPage.js"></script>
   </body>
 </html>

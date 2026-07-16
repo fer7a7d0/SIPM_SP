@@ -41,6 +41,38 @@
   background: #f8fcfa;
 }
 
+.detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.detail-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 35, 28, 0.45);
+}
+
+.detail-modal-panel {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border: 1px solid #d7e1dd;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fcfa;
+  box-shadow: 0 20px 45px rgba(8, 24, 19, 0.25);
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
 .detail-summary p {
   margin-bottom: 0.3rem;
 }
