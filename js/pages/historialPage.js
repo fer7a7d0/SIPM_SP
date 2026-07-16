@@ -9,7 +9,7 @@ const filterArea = document.getElementById("filterArea");
 const searchBtn = document.getElementById("searchBtn");
 const historyList = document.getElementById("historyList");
 const historyMessage = document.getElementById("historyMessage");
-const detailModal = document.getElementById("detailModal");
+const detailModal = document.getElementById("detailModal") || document.getElementById("detailPanel");
 const detailBackdrop = document.getElementById("detailBackdrop");
 const closeDetailBtn = document.getElementById("closeDetailBtn");
 const detailBody = document.getElementById("detailBody");
@@ -28,8 +28,12 @@ async function init() {
   session = localSession;
 
   searchBtn.addEventListener("click", onSearch);
-  closeDetailBtn.addEventListener("click", closeDetailModal);
-  detailBackdrop.addEventListener("click", closeDetailModal);
+  if (closeDetailBtn) {
+    closeDetailBtn.addEventListener("click", closeDetailModal);
+  }
+  if (detailBackdrop) {
+    detailBackdrop.addEventListener("click", closeDetailModal);
+  }
   await loadCatalogs();
   setMessage("Selecciona filtros y presiona Buscar para consultar el historial.", "");
 }
@@ -203,11 +207,17 @@ function renderDetail(data) {
 }
 
 function openDetailModal() {
+  if (!detailModal) {
+    return;
+  }
   detailModal.hidden = false;
   document.body.classList.add("modal-open");
 }
 
 function closeDetailModal() {
+  if (!detailModal) {
+    return;
+  }
   detailModal.hidden = true;
   document.body.classList.remove("modal-open");
 }
