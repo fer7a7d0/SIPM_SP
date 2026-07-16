@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Inicio | SIPM Supervisiones</title>
+    <title>Dashboard | SIPM Supervisiones</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Archivo:wght@600;700&display=swap" rel="stylesheet" />
@@ -18,24 +18,25 @@
       <section class="surface dashboard-surface mx-auto">
         <header class="d-flex justify-content-between align-items-start gap-3 mb-3">
           <div>
-            <p class="eyebrow mb-1">Inicio</p>
-            <h1 class="title-lg">Supervision industrial</h1>
+            <p class="eyebrow mb-1">Dashboard</p>
+            <h1 class="title-lg">Informacion actual</h1>
           </div>
-          <button id="logoutButton" class="btn btn-outline-dark btn-sm">Cerrar sesion</button>
+          <a class="btn btn-outline-dark btn-sm" href="dashboard.html">Volver</a>
         </header>
 
-        <p class="text-muted mb-3">Selecciona una opcion para continuar.</p>
-
-        <div class="d-grid gap-2">
-          <button id="scanQrBtn" class="btn btn-brand btn-lg">Escanear QR</button>
-          <button id="historyBtn" class="btn btn-dark btn-lg">Historial</button>
-          <button id="desboarBtn" class="btn btn-outline-dark btn-lg">Dashboard</button>
+        <div class="card card-soft mb-3">
+          <div class="card-body">
+            <p class="meta mb-2">Supervisor</p>
+            <h2 id="supervisorName" class="title-md mb-2">-</h2>
+            <p id="currentDate" class="mb-1">Fecha: -</p>
+            <p id="todayCount" class="mb-0">Supervisiones hoy: -</p>
+          </div>
         </div>
 
-        <div id="dashboardMessage" class="status-slot mt-3" aria-live="polite"></div>
+        <div id="desboarMessage" class="status-slot mt-3" aria-live="polite"></div>
       </section>
     </main>
 
-    <script type="module" src="js/pages/dashboardPage.js"></script>
+    <script type="module" src="js/pages/desboarPage.js"></script>
   </body>
 </html>

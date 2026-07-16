@@ -1,6 +1,6 @@
 import "../router.js";
 import { ROUTES } from "../config.js";
-import { getSession, verifySession } from "../services/authService.js";
+import { getSession } from "../services/authService.js";
 import { validateQrCode } from "../services/qrService.js";
 import { startSupervision } from "../services/supervisionService.js";
 import { formatGps, getCurrentPosition } from "../utils/geo.js";
@@ -26,11 +26,7 @@ async function init() {
     return;
   }
 
-  activeSession = await verifySession();
-  if (!activeSession) {
-    window.location.replace(ROUTES.login);
-    return;
-  }
+  activeSession = localSession;
 
   validateQrBtn.addEventListener("click", onValidateAndStart);
   startCameraBtn.addEventListener("click", startCamera);
