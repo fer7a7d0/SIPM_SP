@@ -225,7 +225,9 @@ function onContinue() {
 
   persistDraft();
   setMessage("Checklist validado. Continuamos al resumen.", "success");
-  window.location.href = ROUTES.resumen;
+  window.setTimeout(() => {
+    window.location.href = ROUTES.resumen;
+  }, 1200);
 }
 
 function persistDraft() {

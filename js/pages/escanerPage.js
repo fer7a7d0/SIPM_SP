@@ -16,6 +16,10 @@ let activeSession = null;
 let gpsPosition = null;
 let qrScanner = null;
 let cameraActive = false;
+let isSupervisorMode = false;
+let isSubmitting = false;
+let manualInputTimer = null;
+let lastProcessedQr = "";
 
 init();
 
@@ -27,14 +31,34 @@ async function init() {
   }
 
   activeSession = localSession;
+  isSupervisorMode = String(activeSession.role || "").trim().toLowerCase() === "supervisor";
 
-  validateQrBtn.addEventListener("click", onValidateAndStart);
+  setupQrMode();
+  setQrControlsEnabled(false);
+  validateQrBtn.hidden = true;
+
+  validateQrBtn.addEventListener("click", () => {
+    processQrCode(String(qrInput.value || ""));
+  });
   startCameraBtn.addEventListener("click", startCamera);
   stopCameraBtn.addEventListener("click", stopCamera);
+  qrInput.addEventListener("input", () => {
+    if (isSupervisorMode || !gpsPosition) {
+      return;
+    }
+
+    if (manualInputTimer) {
+      window.clearTimeout(manualInputTimer);
+    }
+
+    manualInputTimer = window.setTimeout(() => {
+      processQrCode(String(qrInput.value || ""));
+    }, 700);
+  });
   qrInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      onValidateAndStart();
+      processQrCode(String(qrInput.value || ""));
     }
   });
 
@@ -44,36 +68,80 @@ async function init() {
   });
 }
 
+function setupQrMode() {
+  qrInput.readOnly = isSupervisorMode;
+  if (isSupervisorMode) {
+    qrInput.placeholder = "Lectura por camara habilitada para supervisor";
+  } else {
+    qrInput.placeholder = "Escanea o pega el codigo";
+  }
+}
+
+function setQrControlsEnabled(enabled) {
+  startCameraBtn.disabled = !enabled;
+  if (!enabled || isSupervisorMode) {
+    qrInput.disabled = true;
+    return;
+  }
+  qrInput.disabled = false;
+}
+
 async function captureGps() {
   try {
     gpsStatus.textContent = "Obteniendo ubicacion...";
     gpsPosition = await getCurrentPosition();
     gpsStatus.textContent = `GPS activo: ${formatGps(gpsPosition)} (±${Math.round(gpsPosition.accuracy)}m)`;
+    setQrControlsEnabled(true);
   } catch (error) {
     gpsPosition = null;
+    setQrControlsEnabled(false);
     gpsStatus.textContent = "No disponible";
     setMessage(error.message, "error");
   }
 }
 
-async function onValidateAndStart() {
-  const qrCode = String(qrInput.value || "").trim();
+async function processQrCode(rawValue) {
+  const qrCode = String(rawValue || "").trim();
   if (!qrCode) {
-    setMessage("Escanea o ingresa un codigo QR valido.", "error");
+    if (!isSupervisorMode) {
+      setMessage("Escanea o ingresa un codigo QR valido.", "error");
+    }
+    return;
+  }
+
+  if (isSubmitting) {
+    return;
+  }
+
+  if (lastProcessedQr === qrCode) {
     return;
   }
 
   if (!gpsPosition) {
     setMessage("La ubicacion GPS es obligatoria para iniciar supervision.", "error");
     await captureGps();
+    if (!gpsPosition) {
+      return;
+    }
+  }
+
+  await onValidateAndStart(qrCode);
+}
+
+async function onValidateAndStart(qrCode) {
+  if (!qrCode) {
     return;
   }
 
   try {
+    isSubmitting = true;
+    lastProcessedQr = qrCode;
     validateQrBtn.disabled = true;
     setMessage("Validando area...", "");
 
     const area = await validateQrCode(activeSession.token, qrCode);
+
+    qrInput.value = qrCode;
 
     setMessage("Iniciando supervision...", "");
     await startSupervision({
@@ -86,8 +154,10 @@ async function onValidateAndStart() {
     await stopCamera();
     window.location.replace(ROUTES.supervision);
   } catch (error) {
+    lastProcessedQr = "";
     setMessage(error.message || "No se pudo iniciar supervision.", "error");
   } finally {
+    isSubmitting = false;
     validateQrBtn.disabled = false;
   }
 }
@@ -95,6 +165,14 @@ async function onValidateAndStart() {
 async function startCamera() {
   if (cameraActive) {
     return;
+  }
+
+  if (!gpsPosition) {
+    setMessage("La ubicacion GPS es obligatoria para leer el codigo QR.", "error");
+    await captureGps();
+    if (!gpsPosition) {
+      return;
+    }
   }
 
   if (!window.Html5Qrcode) {
@@ -109,7 +187,7 @@ async function startCamera() {
       { fps: 10, qrbox: { width: 240, height: 240 } },
       (decodedText) => {
         qrInput.value = decodedText;
-        setMessage("QR detectado. Puedes iniciar la supervision.", "success");
+        processQrCode(decodedText);
       },
       () => {}
     );
