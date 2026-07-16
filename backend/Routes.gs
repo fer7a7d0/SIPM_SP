@@ -20,6 +20,8 @@ function routeAction(action, payload) {
       return supervisionChecklistController(payload);
     case "supervision.save":
       return supervisionSaveController(payload);
+    case "history.catalog":
+      return historyCatalogController(payload);
     case "history.search":
       return historySearchController(payload);
     case "history.detail":

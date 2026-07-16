@@ -240,6 +240,11 @@ function buildEvidenceFileName(supervisionId, questionId) {
   return supervisionId + "-" + questionId + "-" + stamp + ".jpg";
 }
 
+function historyCatalogService(payload) {
+  var session = decodeAndVerifyToken(payload.token);
+  return buildHistoryCatalog(session);
+}
+
 function historySearchService(payload) {
   var session = decodeAndVerifyToken(payload.token);
   var filters = payload.filters || {};
@@ -268,13 +273,32 @@ function historySearchService(payload) {
     };
   });
 
+  var catalogData = buildHistoryCatalog(session, usersMap, areasMap);
+
+  return {
+    filtersApplied: {
+      fecha: String(filters.fecha || ""),
+      supervisorId: String(filters.supervisorId || ""),
+      areaId: String(filters.areaId || "")
+    },
+    catalog: catalogData.catalog,
+    permissions: catalogData.permissions,
+    items: items
+  };
+}
+
+function buildHistoryCatalog(session, usersMapArg, areasMapArg) {
+  var isSupervisor = String((session && session.role) || "").toLowerCase() === "supervisor";
+  var usersMap = usersMapArg || mapUsersById();
+  var areasMap = areasMapArg || mapAreasById();
+
   var supervisorOptions = Object.keys(usersMap).map(function (key) {
     return { id: key, name: usersMap[key].nombre };
   });
 
   if (isSupervisor) {
     supervisorOptions = supervisorOptions.filter(function (item) {
-      return String(item.id || "").toUpperCase() === String(session.userId || "").toUpperCase();
+      return String(item.id || "").toUpperCase() === String((session && session.userId) || "").toUpperCase();
     });
   }
 
@@ -283,19 +307,13 @@ function historySearchService(payload) {
   });
 
   return {
-    filtersApplied: {
-      fecha: String(filters.fecha || ""),
-      supervisorId: String(filters.supervisorId || ""),
-      areaId: String(filters.areaId || "")
-    },
     catalog: {
       supervisors: supervisorOptions,
       areas: areaOptions
     },
     permissions: {
       onlyOwnHistory: isSupervisor
-    },
-    items: items
+    }
   };
 }
 

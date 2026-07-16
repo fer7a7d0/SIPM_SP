@@ -54,6 +54,10 @@ function validateSupervisionSavePayload(payload) {
   }
 }
 
+function validateHistoryCatalogPayload(payload) {
+  validateTokenPayload(payload);
+}
+
 function validateHistorySearchPayload(payload) {
   validateTokenPayload(payload);
 }

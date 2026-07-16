@@ -1,7 +1,7 @@
 import "../router.js";
 import { ROUTES } from "../config.js";
 import { getSession, verifySession } from "../services/authService.js";
-import { getHistoryDetail, searchHistory } from "../services/historyService.js";
+import { getHistoryCatalog, getHistoryDetail, searchHistory } from "../services/historyService.js";
 
 const filterDate = document.getElementById("filterDate");
 const filterSupervisor = document.getElementById("filterSupervisor");
@@ -30,7 +30,17 @@ async function init() {
   }
 
   searchBtn.addEventListener("click", onSearch);
-  await onSearch();
+  await loadCatalogs();
+  setMessage("Selecciona filtros y presiona Buscar para consultar el historial.", "");
+}
+
+async function loadCatalogs() {
+  try {
+    const data = await getHistoryCatalog({ token: session.token });
+    renderCatalogs(data.catalog || {}, data.permissions || {});
+  } catch (error) {
+    setMessage(error.message || "No se pudieron cargar los filtros de historial.", "error");
+  }
 }
 
 async function onSearch() {

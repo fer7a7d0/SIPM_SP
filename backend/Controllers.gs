@@ -39,6 +39,11 @@ function supervisionSaveController(payload) {
   return supervisionSaveService(payload);
 }
 
+function historyCatalogController(payload) {
+  validateHistoryCatalogPayload(payload);
+  return historyCatalogService(payload);
+}
+
 function historySearchController(payload) {
   validateHistorySearchPayload(payload);
   return historySearchService(payload);
