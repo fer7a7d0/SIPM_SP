@@ -15,6 +15,8 @@ const totalCountEl = document.getElementById("totalCount");
 const photoCountEl = document.getElementById("photoCount");
 
 const RESPONSE_OPTIONS = ["Cumple", "No cumple", "No aplica"];
+const IMAGE_MAX_DIMENSION = 1280;
+const IMAGE_JPEG_QUALITY = 0.72;
 
 let activeSupervision = null;
 let checklistQuestions = [];
@@ -147,7 +149,7 @@ function renderChecklist() {
       }
 
       try {
-        const dataUrl = await toDataUrl(file);
+        const dataUrl = await toCompressedDataUrl(file);
         answerState[question.id].photoDataUrl = dataUrl;
         preview.src = dataUrl;
         preview.hidden = false;
@@ -235,10 +237,38 @@ function persistDraft() {
   });
 }
 
-function toDataUrl(file) {
+function toCompressedDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+
+    reader.onload = () => {
+      const image = new Image();
+
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxSide = Math.max(image.width || 1, image.height || 1);
+        const ratio = Math.min(1, IMAGE_MAX_DIMENSION / maxSide);
+
+        const targetWidth = Math.max(1, Math.round((image.width || 1) * ratio));
+        const targetHeight = Math.max(1, Math.round((image.height || 1) * ratio));
+
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("No se pudo procesar la imagen"));
+          return;
+        }
+
+        ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+        resolve(canvas.toDataURL("image/jpeg", IMAGE_JPEG_QUALITY));
+      };
+
+      image.onerror = () => reject(new Error("No se pudo procesar la imagen"));
+      image.src = String(reader.result || "");
+    };
+
     reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
     reader.readAsDataURL(file);
   });
