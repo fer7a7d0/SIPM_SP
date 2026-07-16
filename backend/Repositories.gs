@@ -24,8 +24,10 @@ function countTodaySupervisionsByUserId(userId, dateKey) {
     var row = rows[i];
     var rawDate = normalizeSheetDateToKey(row[1]);
     var supervisor = String(row[5] || "").trim().toUpperCase();
+    var horaFin = String(row[3] || "").trim();
+    var duracion = String(row[4] || "").trim();
 
-    if (supervisor === userId && rawDate === dateKey) {
+    if (supervisor === userId && rawDate === dateKey && horaFin && duracion) {
       total += 1;
     }
   }
@@ -208,6 +210,10 @@ function listSupervisionsWithFilters(filters) {
       gps: String(row[7] || "").trim()
     };
 
+    if (!isSupervisionCompleted(item)) {
+      continue;
+    }
+
     if (dateFilter && item.fecha !== dateFilter) {
       continue;
     }
@@ -230,6 +236,12 @@ function listSupervisionsWithFilters(filters) {
   });
 
   return results;
+}
+
+function isSupervisionCompleted(item) {
+  var horaFin = String((item && item.horaFin) || "").trim();
+  var duracion = String((item && item.duracion) || "").trim();
+  return Boolean(horaFin && duracion);
 }
 
 function listAnswersBySupervisionId(supervisionId) {

@@ -26,7 +26,7 @@ async function init() {
   activeSupervision = getActiveSupervision();
   const session = getSession();
 
-  if (!activeSupervision || !activeSupervision.id || !session || !session.token) {
+  if (!activeSupervision || !activeSupervision.areaId || !session || !session.token) {
     window.location.replace(ROUTES.dashboard);
     return;
   }
@@ -39,9 +39,15 @@ async function init() {
 
   try {
     setMessage("Cargando checklist...", "");
+    const checklistPayload = {
+      token: session.token
+    };
+    if (activeSupervision.id) {
+      checklistPayload.supervisionId = activeSupervision.id;
+    }
+
     const data = await getChecklist({
-      token: session.token,
-      supervisionId: activeSupervision.id
+      ...checklistPayload
     });
 
     checklistQuestions = data.questions || [];

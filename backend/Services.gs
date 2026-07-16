@@ -81,24 +81,9 @@ function supervisionStartService(payload) {
   }
 
   var now = new Date();
-  var supervisionId = "SUPV-" + Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyyMMddHHmmss") + "-" + String(Math.floor(Math.random() * 900) + 100);
-  var dateKey = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy-MM-dd");
-  var timeKey = Utilities.formatDate(now, Session.getScriptTimeZone(), "HH:mm:ss");
-
-  appendSupervisionRow({
-    id: supervisionId,
-    fecha: dateKey,
-    horaInicio: timeKey,
-    horaFin: "",
-    duracion: "",
-    supervisor: session.userId,
-    area: area.id,
-    gps: String(payload.gps || "").trim()
-  });
 
   return {
     supervision: {
-      id: supervisionId,
       areaId: area.id,
       areaName: area.nombre,
       qrCode: area.qrCode,
@@ -110,16 +95,7 @@ function supervisionStartService(payload) {
 }
 
 function supervisionChecklistService(payload) {
-  var session = decodeAndVerifyToken(payload.token);
-  var supervision = findSupervisionById(payload.supervisionId);
-
-  if (!supervision) {
-    throw buildError("Supervision no encontrada", "SUPERVISION_NOT_FOUND");
-  }
-
-  if (String(supervision.supervisor || "").toUpperCase() !== String(session.userId || "").toUpperCase()) {
-    throw buildError("No tienes permiso para esta supervision", "AUTH_FORBIDDEN");
-  }
+  decodeAndVerifyToken(payload.token);
 
   var rawQuestions = listQuestionsOrdered();
   var questions = rawQuestions.map(function (item) {
@@ -134,36 +110,38 @@ function supervisionChecklistService(payload) {
   });
 
   return {
-    supervision: {
-      id: supervision.id,
-      areaId: supervision.area,
-      gps: supervision.gps,
-      fecha: supervision.fecha,
-      horaInicio: supervision.horaInicio
-    },
     questions: questions
   };
 }
 
 function supervisionSaveService(payload) {
   var session = decodeAndVerifyToken(payload.token);
-  var supervision = findSupervisionById(payload.supervisionId);
-
-  if (!supervision) {
-    throw buildError("Supervision no encontrada", "SUPERVISION_NOT_FOUND");
+  var areasMap = mapAreasById();
+  var areaId = String(payload.areaId || "").trim();
+  var area = areasMap[areaId] || null;
+  if (!area) {
+    throw buildError("Area no valida para guardar supervision", "AREA_NOT_FOUND");
   }
 
-  if (String(supervision.supervisor || "").toUpperCase() !== String(session.userId || "").toUpperCase()) {
-    throw buildError("No tienes permiso para esta supervision", "AUTH_FORBIDDEN");
+  var endDate = new Date();
+  var startDate = new Date(String(payload.startAt || "").trim());
+  if (isNaN(startDate.getTime())) {
+    startDate = new Date(endDate.getTime());
   }
 
-  if (String(supervision.horaFin || "").trim()) {
-    throw buildError("La supervision ya fue cerrada", "SUPERVISION_ALREADY_CLOSED");
-  }
+  var completion = buildCompletionDataFromDates(startDate, endDate);
+  var supervisionId = "SUPV-" + Utilities.formatDate(endDate, Session.getScriptTimeZone(), "yyyyMMddHHmmss") + "-" + String(Math.floor(Math.random() * 900) + 100);
 
-  if (countAnswersBySupervisionId(supervision.id) > 0) {
-    throw buildError("La supervision ya tiene respuestas guardadas", "SUPERVISION_ALREADY_SAVED");
-  }
+  appendSupervisionRow({
+    id: supervisionId,
+    fecha: completion.fecha,
+    horaInicio: completion.horaInicio,
+    horaFin: completion.horaFin,
+    duracion: completion.duracion,
+    supervisor: session.userId,
+    area: areaId,
+    gps: String(payload.gps || "").trim()
+  });
 
   var rawQuestions = listQuestionsOrdered();
   var answersById = {};
@@ -208,12 +186,12 @@ function supervisionSaveService(payload) {
     var answerPhotoDataUrl = String(a.photoDataUrl || "").trim();
 
     if (answerPhotoDataUrl) {
-      photoUrl = uploadPhotoToDrive(answerPhotoDataUrl, buildEvidenceFileName(supervision.id, q.id));
+      photoUrl = uploadPhotoToDrive(answerPhotoDataUrl, buildEvidenceFileName(supervisionId, q.id));
       photosStored += 1;
     }
 
     appendAnswerRow({
-      supervisionId: supervision.id,
+      supervisionId: supervisionId,
       questionId: q.id,
       response: String(a.response || "").trim(),
       comment: String(a.comment || "").trim(),
@@ -221,34 +199,38 @@ function supervisionSaveService(payload) {
     });
   }
 
-  var completion = buildCompletionData(supervision.fecha, supervision.horaInicio);
-  updateSupervisionCompletion({
-    supervisionId: supervision.id,
-    horaFin: completion.horaFin,
-    duracion: completion.duracion
-  });
-
   return {
     saved: true,
-    supervisionId: supervision.id,
+    supervisionId: supervisionId,
     answeredCount: rawQuestions.length,
     photosStored: photosStored,
+    fecha: completion.fecha,
+    horaInicio: completion.horaInicio,
     horaFin: completion.horaFin,
     duracion: completion.duracion
   };
 }
 
-function buildCompletionData(fecha, horaInicio) {
-  var endDate = new Date();
-  var startDate = new Date(String(fecha || "") + "T" + String(horaInicio || "00:00:00"));
-  var minutes = 0;
+function buildCompletionDataFromDates(startDate, endDate) {
+  var safeStart = startDate;
+  var safeEnd = endDate;
 
-  if (!isNaN(startDate.getTime())) {
-    minutes = Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / 60000));
+  if (Object.prototype.toString.call(safeStart) !== "[object Date]" || isNaN(safeStart.getTime())) {
+    safeStart = new Date();
+  }
+  if (Object.prototype.toString.call(safeEnd) !== "[object Date]" || isNaN(safeEnd.getTime())) {
+    safeEnd = new Date();
   }
 
+  var tz = Session.getScriptTimeZone();
+  var minutes = 0;
+
+  minutes = Math.max(0, Math.round((safeEnd.getTime() - safeStart.getTime()) / 60000));
+
   return {
-    horaFin: Utilities.formatDate(endDate, Session.getScriptTimeZone(), "HH:mm:ss"),
+    fecha: Utilities.formatDate(safeStart, tz, "yyyy-MM-dd"),
+    horaInicio: Utilities.formatDate(safeStart, tz, "HH:mm:ss"),
+    horaFin: Utilities.formatDate(safeEnd, tz, "HH:mm:ss"),
     duracion: String(minutes) + " min"
   };
 }
@@ -321,6 +303,10 @@ function historyDetailService(payload) {
   var session = decodeAndVerifyToken(payload.token);
   var supervision = findSupervisionById(payload.supervisionId);
   if (!supervision) {
+    throw buildError("Supervision no encontrada", "SUPERVISION_NOT_FOUND");
+  }
+
+  if (!String(supervision.horaFin || "").trim() || !String(supervision.duracion || "").trim()) {
     throw buildError("Supervision no encontrada", "SUPERVISION_NOT_FOUND");
   }
 

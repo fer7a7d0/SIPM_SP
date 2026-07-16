@@ -17,7 +17,7 @@ function init() {
   session = getSession();
   active = getActiveSupervision();
 
-  if (!session || !active || !active.id || !active.answers) {
+  if (!session || !active || !active.areaId || !active.gps || !active.startAt || !active.answers) {
     window.location.replace(ROUTES.dashboard);
     return;
   }
@@ -67,7 +67,9 @@ async function onSave() {
 
     await saveSupervision({
       token: session.token,
-      supervisionId: active.id,
+      areaId: active.areaId,
+      gps: active.gps,
+      startAt: active.startAt,
       answers: payloadAnswers
     });
 
