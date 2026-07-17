@@ -63,6 +63,12 @@
     background: #15211e;
   }
 
+  #areaName,
+  #startTime,
+  #gpsText {
+    color: #e7f2ef;
+  }
+
   .question-category {
     color: #98e4c8;
     background: #12372f;

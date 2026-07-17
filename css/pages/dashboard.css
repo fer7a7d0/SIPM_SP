@@ -138,9 +138,6 @@
   overflow-x: auto;
 }
 
-@media (min-width: 768px) {
-}
-
 @media (prefers-color-scheme: dark) {
   .dashboard-page {
     color: #e7f2ef;
@@ -161,6 +158,10 @@
   .dashboard-page #timeGlobal,
   .dashboard-page .text-muted {
     color: #a9c0ba !important;
+  }
+
+  .dashboard-page #supervisorName {
+    color: #f1fbf8;
   }
 
   .dashboard-page .btn.btn-outline-dark {

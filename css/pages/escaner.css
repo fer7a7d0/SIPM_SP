@@ -20,4 +20,20 @@
     border-color: #3d5a52;
     background: #101b19;
   }
+
+  #gpsStatus {
+    color: #e7f2ef;
+  }
+
+  #stopCameraBtn {
+    color: #d7ebe5;
+    border-color: #5f7a73;
+  }
+
+  #stopCameraBtn:disabled {
+    color: #b8cbc6;
+    border-color: #4f6761;
+    background: rgba(95, 122, 115, 0.18);
+    opacity: 0.9;
+  }
 }

@@ -120,6 +120,25 @@ main {
     border: 1px solid rgba(130, 167, 157, 0.28);
   }
 
+  .text-muted {
+    color: #a9c0ba !important;
+  }
+
+  .form-label,
+  label,
+  small {
+    color: #c5d8d3;
+  }
+
+  a {
+    color: #97cfff;
+  }
+
+  a:hover,
+  a:focus {
+    color: #b9deff;
+  }
+
   .status-slot.error {
     color: #ff9f9f;
   }
