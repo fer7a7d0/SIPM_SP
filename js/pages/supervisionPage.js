@@ -137,11 +137,14 @@ function renderChecklist() {
       persistDraft();
     });
 
+    const photoInputId = `photoInput-${question.id}`;
+
     const photoInput = document.createElement("input");
     photoInput.type = "file";
     photoInput.accept = "image/*";
     photoInput.capture = "environment";
-    photoInput.className = "form-control mt-2";
+    photoInput.id = photoInputId;
+    photoInput.className = "photo-input";
     photoInput.addEventListener("change", async () => {
       const file = photoInput.files && photoInput.files[0];
       if (!file) {
@@ -160,6 +163,11 @@ function renderChecklist() {
       }
     });
 
+    const photoButton = document.createElement("label");
+    photoButton.className = "btn btn-outline-dark w-100 photo-action mt-2";
+    photoButton.setAttribute("for", photoInputId);
+    photoButton.textContent = "Agregar foto";
+
     const preview = document.createElement("img");
     preview.className = "photo-preview";
     preview.alt = "Vista previa de evidencia";
@@ -173,6 +181,7 @@ function renderChecklist() {
     wrapper.appendChild(requiresWrap);
     wrapper.appendChild(select);
     wrapper.appendChild(comment);
+    wrapper.appendChild(photoButton);
     wrapper.appendChild(photoInput);
     wrapper.appendChild(preview);
     checklistContainer.appendChild(wrapper);

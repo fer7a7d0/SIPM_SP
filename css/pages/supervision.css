@@ -53,6 +53,18 @@
   margin-top: 8px;
 }
 
+.photo-input {
+  display: none;
+}
+
+.photo-action {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
 .checklist-meta {
   color: #51635f;
 }
@@ -81,6 +93,19 @@
 
   .photo-preview {
     border-color: #3c5750;
+  }
+
+  .photo-action {
+    color: #d9ece7;
+    border-color: #537069;
+    background: transparent;
+  }
+
+  .photo-action:hover,
+  .photo-action:focus {
+    color: #ffffff;
+    border-color: #7aa096;
+    background: rgba(122, 160, 150, 0.18);
   }
 
   .checklist-meta {

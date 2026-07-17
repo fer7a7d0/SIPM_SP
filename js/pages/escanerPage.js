@@ -139,12 +139,12 @@ async function onValidateAndStart(qrCode) {
     isSubmitting = true;
     lastProcessedQr = qrCode;
     validateQrBtn.disabled = true;
+    setValidationState(true);
     setMessage("Validando area...", "");
 
     const area = await validateQrCode(activeSession.token, qrCode);
 
     qrInput.value = qrCode;
-    setValidationState(true);
 
     setMessage("Iniciando supervision...", "");
     await startSupervision({
