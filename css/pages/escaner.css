@@ -13,6 +13,37 @@
   border-radius: 14px;
   overflow: hidden;
   background: #f7faf9;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#qrInput,
+#gpsStatus,
+.card-soft,
+.qr-reader,
+#startCameraBtn,
+#stopCameraBtn,
+#validateQrBtn {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.scan-valid {
+  border-color: #1f8f5f !important;
+  box-shadow: 0 0 0 0.18rem rgba(31, 143, 95, 0.18) !important;
+}
+
+.scan-valid.qr-reader {
+  background: #eefaf3;
+}
+
+.scan-valid-soft {
+  border-color: #1f8f5f !important;
+  box-shadow: 0 0 0 0.18rem rgba(31, 143, 95, 0.14) !important;
+}
+
+.scan-valid-button {
+  border-color: #1f8f5f !important;
+  color: #116543 !important;
+  background: rgba(31, 143, 95, 0.08) !important;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,5 +66,25 @@
     border-color: #4f6761;
     background: rgba(95, 122, 115, 0.18);
     opacity: 0.9;
+  }
+
+  .scan-valid {
+    border-color: #4fe0a2 !important;
+    box-shadow: 0 0 0 0.18rem rgba(79, 224, 162, 0.16) !important;
+  }
+
+  .scan-valid.qr-reader {
+    background: #0f231b;
+  }
+
+  .scan-valid-soft {
+    border-color: #4fe0a2 !important;
+    box-shadow: 0 0 0 0.18rem rgba(79, 224, 162, 0.12) !important;
+  }
+
+  .scan-valid-button {
+    border-color: #4fe0a2 !important;
+    color: #bef7db !important;
+    background: rgba(79, 224, 162, 0.12) !important;
   }
 }

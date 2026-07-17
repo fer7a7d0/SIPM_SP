@@ -11,6 +11,8 @@ const gpsStatus = document.getElementById("gpsStatus");
 const scannerMessage = document.getElementById("scannerMessage");
 const startCameraBtn = document.getElementById("startCameraBtn");
 const stopCameraBtn = document.getElementById("stopCameraBtn");
+const qrReader = document.getElementById("qrReader");
+const gpsCard = gpsStatus.closest(".card");
 
 let activeSession = null;
 let gpsPosition = null;
@@ -142,6 +144,7 @@ async function onValidateAndStart(qrCode) {
     const area = await validateQrCode(activeSession.token, qrCode);
 
     qrInput.value = qrCode;
+    setValidationState(true);
 
     setMessage("Iniciando supervision...", "");
     await startSupervision({
@@ -155,6 +158,7 @@ async function onValidateAndStart(qrCode) {
     window.location.replace(ROUTES.supervision);
   } catch (error) {
     lastProcessedQr = "";
+    setValidationState(false);
     setMessage(error.message || "No se pudo iniciar supervision.", "error");
   } finally {
     isSubmitting = false;
@@ -216,6 +220,19 @@ async function stopCamera() {
   cameraActive = false;
   startCameraBtn.disabled = false;
   stopCameraBtn.disabled = true;
+}
+
+function setValidationState(enabled) {
+  const targets = [qrInput, qrReader, gpsCard, validateQrBtn, startCameraBtn, stopCameraBtn];
+
+  targets.forEach((element) => {
+    if (!element) {
+      return;
+    }
+    element.classList.toggle("scan-valid", enabled && (element === qrInput || element === qrReader));
+    element.classList.toggle("scan-valid-soft", enabled && (element === gpsCard));
+    element.classList.toggle("scan-valid-button", enabled && (element === validateQrBtn || element === startCameraBtn || element === stopCameraBtn));
+  });
 }
 
 function setMessage(message, type) {

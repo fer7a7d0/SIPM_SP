@@ -17,14 +17,18 @@
   <body>
     <main class="container-fluid px-3 py-3">
       <section class="surface dashboard-surface mx-auto p-3">
-        <p class="eyebrow mb-1">Resumen</p>
-        <h1 class="title-lg mb-3">Confirmar supervision</h1>
+        <header class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <p class="eyebrow mb-1">Resumen</p>
+            <h1 class="title-lg">Confirmar supervision</h1>
+          </div>
+          <a class="btn btn-outline-dark btn-sm" href="supervision.html">Volver</a>
+        </header>
 
         <div id="summaryList" class="summary-list"></div>
 
         <div class="d-grid gap-2">
           <button id="saveSummaryBtn" class="btn btn-brand btn-lg">Guardar supervision</button>
-          <a class="btn btn-dark btn-lg" href="supervision.html">Volver a supervision</a>
         </div>
 
         <div id="summaryMessage" class="status-slot mt-3" aria-live="polite"></div>
