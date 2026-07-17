@@ -25,3 +25,14 @@
 .summary-item strong {
   text-align: right;
 }
+
+@media (prefers-color-scheme: dark) {
+  .summary-item {
+    border-color: #314740;
+    background: #15211e;
+  }
+
+  .summary-item span {
+    color: #a1bbb4;
+  }
+}

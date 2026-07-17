@@ -56,3 +56,28 @@
 .checklist-meta {
   color: #51635f;
 }
+
+@media (prefers-color-scheme: dark) {
+  .question-card {
+    border-color: #345049;
+    background: #15211e;
+  }
+
+  .question-category {
+    color: #98e4c8;
+    background: #12372f;
+  }
+
+  .required-chip {
+    color: #ffd8a5;
+    background: #4f3213;
+  }
+
+  .photo-preview {
+    border-color: #3c5750;
+  }
+
+  .checklist-meta {
+    color: #a1bbb4;
+  }
+}

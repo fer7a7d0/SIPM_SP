@@ -56,6 +56,378 @@ function dashboardStatsService(payload) {
   };
 }
 
+function dashboardKpiSummaryService(payload) {
+  var session = decodeAndVerifyToken(payload.token);
+  var tz = Session.getScriptTimeZone();
+  var now = new Date();
+  var todayKey = Utilities.formatDate(now, tz, "yyyy-MM-dd");
+  var weekStartKey = Utilities.formatDate(shiftDateDays(now, -6), tz, "yyyy-MM-dd");
+  var monthStartKey = Utilities.formatDate(shiftDateDays(now, -29), tz, "yyyy-MM-dd");
+
+  var windowDays = Number((payload && payload.windowDays) || 30);
+  if (!isFinite(windowDays) || windowDays < 7 || windowDays > 90) {
+    windowDays = 30;
+  }
+  var windowStartKey = Utilities.formatDate(shiftDateDays(now, -(windowDays - 1)), tz, "yyyy-MM-dd");
+
+  var usersMap = mapUsersById();
+  var areasMap = mapAreasById();
+  var supervisions = listSupervisionsWithFilters({});
+  var isSupervisor = String(session.role || "").toLowerCase() === "supervisor";
+
+  if (isSupervisor) {
+    supervisions = supervisions.filter(function (item) {
+      return String(item.supervisorId || "").toUpperCase() === String(session.userId || "").toUpperCase();
+    });
+  }
+
+  supervisions = supervisions.filter(function (item) {
+    return compareDateKeys(item.fecha, windowStartKey) >= 0 && compareDateKeys(item.fecha, todayKey) <= 0;
+  });
+
+  var answersBySupervision = buildAnswerAggregatesBySupervision(listAllAnswers());
+  var enriched = supervisions.map(function (item) {
+    var agg = answersBySupervision[item.id] || emptyAnswerAggregate();
+    return {
+      id: item.id,
+      fecha: item.fecha,
+      supervisorId: item.supervisorId,
+      supervisorName: usersMap[item.supervisorId] ? usersMap[item.supervisorId].nombre : item.supervisorId,
+      areaId: item.areaId,
+      areaName: areasMap[item.areaId] ? areasMap[item.areaId].area : item.areaId,
+      duracionMin: parseDurationToMinutes(item.duracion),
+      cumple: agg.cumple,
+      noCumple: agg.noCumple,
+      noAplica: agg.noAplica,
+      evaluables: agg.cumple + agg.noCumple,
+      hallazgos: agg.noCumple,
+      photos: agg.photos
+    };
+  });
+
+  var monthSlice = filterByDateRange(enriched, monthStartKey, todayKey);
+
+  return {
+    generatedAt: now.toISOString(),
+    timezone: tz,
+    periods: {
+      day: buildPeriodMetrics(filterByDateRange(enriched, todayKey, todayKey), todayKey, todayKey),
+      week: buildPeriodMetrics(filterByDateRange(enriched, weekStartKey, todayKey), weekStartKey, todayKey),
+      month: buildPeriodMetrics(monthSlice, monthStartKey, todayKey)
+    },
+    bySupervisor: buildSupervisorMetrics(enriched),
+    findingsTrend: buildFindingsTrend(enriched, weekStartKey, todayKey),
+    areaRanking: buildAreaRanking(monthSlice),
+    timeMetrics: buildTimeMetrics(monthSlice)
+  };
+}
+
+function shiftDateDays(dateObj, days) {
+  var base = new Date(dateObj.getTime());
+  base.setDate(base.getDate() + Number(days || 0));
+  return base;
+}
+
+function compareDateKeys(a, b) {
+  return String(a || "").localeCompare(String(b || ""));
+}
+
+function parseDurationToMinutes(value) {
+  var raw = String(value || "").trim();
+  if (!raw) {
+    return 0;
+  }
+
+  var match = raw.match(/(\d+)/);
+  if (!match) {
+    return 0;
+  }
+
+  var minutes = Number(match[1]);
+  if (!isFinite(minutes) || minutes < 0) {
+    return 0;
+  }
+
+  return minutes;
+}
+
+function emptyAnswerAggregate() {
+  return {
+    cumple: 0,
+    noCumple: 0,
+    noAplica: 0,
+    photos: 0
+  };
+}
+
+function buildAnswerAggregatesBySupervision(answers) {
+  var map = {};
+
+  for (var i = 0; i < answers.length; i += 1) {
+    var item = answers[i];
+    var id = String(item.supervisionId || "").trim();
+    if (!id) {
+      continue;
+    }
+
+    if (!map[id]) {
+      map[id] = emptyAnswerAggregate();
+    }
+
+    var response = String(item.response || "").trim().toLowerCase();
+    if (response === "cumple") {
+      map[id].cumple += 1;
+    } else if (response === "no cumple") {
+      map[id].noCumple += 1;
+    } else if (response === "no aplica") {
+      map[id].noAplica += 1;
+    }
+
+    if (String(item.photoUrl || "").trim()) {
+      map[id].photos += 1;
+    }
+  }
+
+  return map;
+}
+
+function filterByDateRange(list, startKey, endKey) {
+  return list.filter(function (item) {
+    return compareDateKeys(item.fecha, startKey) >= 0 && compareDateKeys(item.fecha, endKey) <= 0;
+  });
+}
+
+function toPercent(numerator, denominator) {
+  if (!denominator) {
+    return null;
+  }
+  return round1((Number(numerator || 0) / Number(denominator)) * 100);
+}
+
+function round1(value) {
+  return Math.round(Number(value || 0) * 10) / 10;
+}
+
+function average(values) {
+  if (!values || values.length === 0) {
+    return null;
+  }
+  var total = 0;
+  for (var i = 0; i < values.length; i += 1) {
+    total += Number(values[i] || 0);
+  }
+  return round1(total / values.length);
+}
+
+function percentile(values, p) {
+  if (!values || values.length === 0) {
+    return null;
+  }
+
+  var sorted = values.slice().sort(function (a, b) {
+    return a - b;
+  });
+  var rank = Math.ceil((Number(p || 0) / 100) * sorted.length) - 1;
+  var idx = Math.min(Math.max(rank, 0), sorted.length - 1);
+  return round1(sorted[idx]);
+}
+
+function buildPeriodMetrics(items, startKey, endKey) {
+  var evaluables = 0;
+  var cumple = 0;
+  var hallazgos = 0;
+  var withHallazgos = 0;
+  var durations = [];
+
+  for (var i = 0; i < items.length; i += 1) {
+    var item = items[i];
+    evaluables += Number(item.evaluables || 0);
+    cumple += Number(item.cumple || 0);
+    hallazgos += Number(item.hallazgos || 0);
+    if (Number(item.hallazgos || 0) > 0) {
+      withHallazgos += 1;
+    }
+    if (Number(item.duracionMin || 0) > 0) {
+      durations.push(Number(item.duracionMin));
+    }
+  }
+
+  return {
+    start: startKey,
+    end: endKey,
+    supervisionesFinalizadas: items.length,
+    hallazgosTotales: hallazgos,
+    cumplimientoPct: toPercent(cumple, evaluables),
+    supervisionesConHallazgosPct: toPercent(withHallazgos, items.length),
+    duracionPromedioMin: average(durations)
+  };
+}
+
+function buildSupervisorMetrics(items) {
+  var bySupervisor = {};
+
+  for (var i = 0; i < items.length; i += 1) {
+    var item = items[i];
+    if (!bySupervisor[item.supervisorId]) {
+      bySupervisor[item.supervisorId] = [];
+    }
+    bySupervisor[item.supervisorId].push(item);
+  }
+
+  var keys = Object.keys(bySupervisor);
+  var now = new Date();
+  var tz = Session.getScriptTimeZone();
+  var todayKey = Utilities.formatDate(now, tz, "yyyy-MM-dd");
+  var weekStartKey = Utilities.formatDate(shiftDateDays(now, -6), tz, "yyyy-MM-dd");
+  var monthStartKey = Utilities.formatDate(shiftDateDays(now, -29), tz, "yyyy-MM-dd");
+
+  var rows = keys.map(function (supervisorId) {
+    var list = bySupervisor[supervisorId];
+    return {
+      supervisorId: supervisorId,
+      supervisorName: list[0].supervisorName,
+      day: buildPeriodMetrics(filterByDateRange(list, todayKey, todayKey), todayKey, todayKey),
+      week: buildPeriodMetrics(filterByDateRange(list, weekStartKey, todayKey), weekStartKey, todayKey),
+      month: buildPeriodMetrics(filterByDateRange(list, monthStartKey, todayKey), monthStartKey, todayKey)
+    };
+  });
+
+  rows.sort(function (a, b) {
+    return String(a.supervisorName || "").localeCompare(String(b.supervisorName || ""));
+  });
+
+  return rows;
+}
+
+function buildFindingsTrend(items, startKey, endKey) {
+  var dates = [];
+  var cursor = new Date(startKey + "T00:00:00");
+  var endDate = new Date(endKey + "T00:00:00");
+  var tz = Session.getScriptTimeZone();
+
+  while (cursor.getTime() <= endDate.getTime()) {
+    dates.push(Utilities.formatDate(cursor, tz, "yyyy-MM-dd"));
+    cursor = shiftDateDays(cursor, 1);
+  }
+
+  var map = {};
+  for (var i = 0; i < dates.length; i += 1) {
+    map[dates[i]] = { hallazgos: 0, supervisiones: 0 };
+  }
+
+  for (var j = 0; j < items.length; j += 1) {
+    var item = items[j];
+    if (!map[item.fecha]) {
+      continue;
+    }
+    map[item.fecha].hallazgos += Number(item.hallazgos || 0);
+    map[item.fecha].supervisiones += 1;
+  }
+
+  return dates.map(function (dateKey) {
+    return {
+      date: dateKey,
+      hallazgos: map[dateKey].hallazgos,
+      supervisiones: map[dateKey].supervisiones
+    };
+  });
+}
+
+function buildAreaRanking(items) {
+  var byArea = {};
+
+  for (var i = 0; i < items.length; i += 1) {
+    var item = items[i];
+    if (!byArea[item.areaId]) {
+      byArea[item.areaId] = {
+        areaId: item.areaId,
+        areaName: item.areaName,
+        hallazgos: 0,
+        cumple: 0,
+        evaluables: 0,
+        supervisiones: 0,
+        durations: []
+      };
+    }
+
+    byArea[item.areaId].hallazgos += Number(item.hallazgos || 0);
+    byArea[item.areaId].cumple += Number(item.cumple || 0);
+    byArea[item.areaId].evaluables += Number(item.evaluables || 0);
+    byArea[item.areaId].supervisiones += 1;
+    if (Number(item.duracionMin || 0) > 0) {
+      byArea[item.areaId].durations.push(Number(item.duracionMin));
+    }
+  }
+
+  var rows = Object.keys(byArea).map(function (key) {
+    var row = byArea[key];
+    return {
+      areaId: row.areaId,
+      areaName: row.areaName,
+      hallazgos: row.hallazgos,
+      cumplimientoPct: toPercent(row.cumple, row.evaluables),
+      supervisiones: row.supervisiones,
+      duracionPromedioMin: average(row.durations)
+    };
+  });
+
+  rows.sort(function (a, b) {
+    if (b.hallazgos !== a.hallazgos) {
+      return b.hallazgos - a.hallazgos;
+    }
+    return String(a.areaName || "").localeCompare(String(b.areaName || ""));
+  });
+
+  return rows.slice(0, 10);
+}
+
+function buildTimeMetrics(items) {
+  var durations = [];
+  var bySupervisor = {};
+
+  for (var i = 0; i < items.length; i += 1) {
+    var item = items[i];
+    if (Number(item.duracionMin || 0) <= 0) {
+      continue;
+    }
+
+    var duration = Number(item.duracionMin);
+    durations.push(duration);
+
+    if (!bySupervisor[item.supervisorId]) {
+      bySupervisor[item.supervisorId] = {
+        supervisorId: item.supervisorId,
+        supervisorName: item.supervisorName,
+        durations: []
+      };
+    }
+
+    bySupervisor[item.supervisorId].durations.push(duration);
+  }
+
+  var bySupervisorRows = Object.keys(bySupervisor).map(function (key) {
+    var row = bySupervisor[key];
+    return {
+      supervisorId: row.supervisorId,
+      supervisorName: row.supervisorName,
+      duracionPromedioMin: average(row.durations),
+      duracionP90Min: percentile(row.durations, 90)
+    };
+  });
+
+  bySupervisorRows.sort(function (a, b) {
+    return String(a.supervisorName || "").localeCompare(String(b.supervisorName || ""));
+  });
+
+  return {
+    global: {
+      duracionPromedioMin: average(durations),
+      duracionP90Min: percentile(durations, 90)
+    },
+    bySupervisor: bySupervisorRows
+  };
+}
+
 function qrValidateService(payload) {
   decodeAndVerifyToken(payload.token);
 

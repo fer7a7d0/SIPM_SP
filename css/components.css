@@ -10,3 +10,22 @@
   border-color: rgba(14, 141, 109, 0.8);
   box-shadow: 0 0 0 0.2rem rgba(14, 141, 109, 0.2);
 }
+
+@media (prefers-color-scheme: dark) {
+  .form-control,
+  .form-select {
+    color: #e7f2ef;
+    background: #0f1917;
+    border-color: #375048;
+  }
+
+  .form-control::placeholder {
+    color: #8ea9a2;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: rgba(67, 179, 146, 0.9);
+    box-shadow: 0 0 0 0.2rem rgba(67, 179, 146, 0.22);
+  }
+}

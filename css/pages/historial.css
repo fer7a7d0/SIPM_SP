@@ -94,3 +94,34 @@ body.modal-open {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  .history-card {
+    border-color: #314640;
+    background: #15211e;
+  }
+
+  .history-card-head small {
+    color: #a1bbb4;
+  }
+
+  .detail-panel {
+    border-color: #314640;
+    background: #15211e;
+  }
+
+  .detail-modal-backdrop {
+    background: rgba(0, 0, 0, 0.62);
+  }
+
+  .detail-modal-panel {
+    border-color: #314640;
+    background: #15211e;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+  }
+
+  .detail-answer-item {
+    border-color: #355049;
+    background: #1a2925;
+  }
+}

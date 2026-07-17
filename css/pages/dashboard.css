@@ -6,3 +6,253 @@
 .dashboard-page .btn-lg {
   min-height: 56px;
 }
+
+.kpi-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  width: 100%;
+}
+
+.kpi-grid-3 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+#kpiFinalizadasCards,
+#kpiHallazgosCards {
+  max-width: 980px;
+  margin-inline: auto;
+}
+
+.kpi-card {
+  border: 1px solid #d7e1dd;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fbfdfc;
+  min-width: 0;
+  height: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#kpiFinalizadasCards .kpi-card {
+  border-color: #9fc5b2;
+  background: linear-gradient(180deg, #eff9f2 0%, #f7fcf9 100%);
+}
+
+#kpiHallazgosCards .kpi-card {
+  border-color: #e7b66e;
+  background: linear-gradient(180deg, #fff6e9 0%, #fffaf2 100%);
+}
+
+.kpi-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.kpi-period {
+  display: inline-block;
+  width: fit-content;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.period-day {
+  color: #0d5f9a;
+  background: #dff1ff;
+}
+
+.period-week {
+  color: #7a4f00;
+  background: #ffecbf;
+}
+
+.period-month {
+  color: #0d6a4f;
+  background: #dff8ec;
+}
+
+.kpi-label {
+  font-weight: 700;
+  color: #1f2e2a;
+}
+
+.kpi-block {
+  border: 1px solid #d7e1dd;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fcfa;
+}
+
+#supervisorKpiBlock {
+  border-color: #8cb3d7;
+  background: linear-gradient(180deg, #edf6ff 0%, #f8fbff 100%);
+}
+
+#supervisorKpiBlock .title-sm {
+  color: #144a7a;
+}
+
+#trendKpiBlock {
+  border-color: #d7a4d1;
+  background: linear-gradient(180deg, #fdf0fb 0%, #fff7fe 100%);
+}
+
+#trendKpiBlock .title-sm {
+  color: #7a2f70;
+}
+
+#rankingKpiBlock {
+  border-color: #c9a987;
+  background: linear-gradient(180deg, #fff5ea 0%, #fffbf6 100%);
+}
+
+#rankingKpiBlock .title-sm {
+  color: #7a4a1f;
+}
+
+#timeKpiBlock {
+  border-color: #7db8bc;
+  background: linear-gradient(180deg, #eaf9fa 0%, #f4feff 100%);
+}
+
+#timeKpiBlock .title-sm {
+  color: #145f64;
+}
+
+.title-sm {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+@media (min-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .kpi-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .dashboard-page {
+    color: #e7f2ef;
+  }
+
+  .dashboard-page .dashboard-surface {
+    background: #121a18;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  }
+
+  .dashboard-page .card-soft {
+    background: #17211f;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .dashboard-page .meta,
+  .dashboard-page #currentDate,
+  .dashboard-page #timeGlobal,
+  .dashboard-page .text-muted {
+    color: #a9c0ba !important;
+  }
+
+  .dashboard-page .btn.btn-outline-dark {
+    color: #d9ece7;
+    border-color: #46655d;
+    background: transparent;
+  }
+
+  .dashboard-page .btn.btn-outline-dark:hover,
+  .dashboard-page .btn.btn-outline-dark:focus {
+    color: #ffffff;
+    border-color: #6f9489;
+    background: rgba(111, 148, 137, 0.2);
+  }
+
+  .kpi-card {
+    border-color: #2e423e;
+    background: #172321;
+  }
+
+  #kpiFinalizadasCards .kpi-card {
+    border-color: #2b6350;
+    background: linear-gradient(180deg, #14332a 0%, #192a25 100%);
+  }
+
+  #kpiHallazgosCards .kpi-card {
+    border-color: #7d5d2a;
+    background: linear-gradient(180deg, #352913 0%, #2b2317 100%);
+  }
+
+  .kpi-label,
+  .title-sm,
+  .dashboard-page th,
+  .dashboard-page td {
+    color: #e7f2ef;
+  }
+
+  .kpi-block {
+    border-color: #334642;
+    background: #16211f;
+  }
+
+  #supervisorKpiBlock {
+    border-color: #35597a;
+    background: linear-gradient(180deg, #172636 0%, #19242f 100%);
+  }
+
+  #supervisorKpiBlock .title-sm {
+    color: #9cc8ee;
+  }
+
+  #trendKpiBlock {
+    border-color: #6d4868;
+    background: linear-gradient(180deg, #2f1e2d 0%, #251d29 100%);
+  }
+
+  #trendKpiBlock .title-sm {
+    color: #e2b6dd;
+  }
+
+  #rankingKpiBlock {
+    border-color: #746049;
+    background: linear-gradient(180deg, #34281c 0%, #2b241d 100%);
+  }
+
+  #rankingKpiBlock .title-sm {
+    color: #e5c59f;
+  }
+
+  #timeKpiBlock {
+    border-color: #3e696c;
+    background: linear-gradient(180deg, #173036 0%, #18292d 100%);
+  }
+
+  #timeKpiBlock .title-sm {
+    color: #9fd9dc;
+  }
+
+  .dashboard-page .table {
+    --bs-table-bg: transparent;
+    --bs-table-color: #e7f2ef;
+    --bs-table-border-color: #2f4440;
+    --bs-table-striped-color: #e7f2ef;
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.02);
+    --bs-table-hover-color: #ffffff;
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
+  }
+}

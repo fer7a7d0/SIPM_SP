@@ -14,3 +14,10 @@
   overflow: hidden;
   background: #f7faf9;
 }
+
+@media (prefers-color-scheme: dark) {
+  .qr-reader {
+    border-color: #3d5a52;
+    background: #101b19;
+  }
+}

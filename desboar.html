@@ -29,9 +29,131 @@
             <p class="meta mb-2">Supervisor</p>
             <h2 id="supervisorName" class="title-md mb-2">-</h2>
             <p id="currentDate" class="mb-1">Fecha: -</p>
-            <p id="todayCount" class="mb-0">Supervisiones hoy: -</p>
           </div>
         </div>
+
+        <section class="kpi-grid mb-3" id="kpiFinalizadasCards">
+          <article class="kpi-card">
+            <p class="meta mb-1 kpi-meta">
+              <span class="kpi-period period-day">Hoy</span>
+              <span class="kpi-label">Supervisiones</span>
+            </p>
+            <h3 id="kpiDayFinalizadas" class="title-md mb-0">-</h3>
+          </article>
+          <article class="kpi-card">
+            <p class="meta mb-1 kpi-meta">
+              <span class="kpi-period period-week">Semana</span>
+              <span class="kpi-label">Supervisiones</span>
+            </p>
+            <h3 id="kpiWeekFinalizadas" class="title-md mb-0">-</h3>
+          </article>
+          <article class="kpi-card">
+            <p class="meta mb-1 kpi-meta">
+              <span class="kpi-period period-month">Mes</span>
+              <span class="kpi-label">Supervisiones</span>
+            </p>
+            <h3 id="kpiMonthFinalizadas" class="title-md mb-0">-</h3>
+          </article>
+        </section>
+
+        <section class="kpi-grid kpi-grid-3 mb-3" id="kpiHallazgosCards">
+          <article class="kpi-card">
+            <p class="meta mb-1 kpi-meta">
+              <span class="kpi-period period-day">Hoy</span>
+              <span class="kpi-label">Hallazgos</span>
+            </p>
+            <h3 id="kpiDayHallazgos" class="title-md mb-0">-</h3>
+          </article>
+          <article class="kpi-card">
+            <p class="meta mb-1 kpi-meta">
+              <span class="kpi-period period-week">Semana</span>
+              <span class="kpi-label">Hallazgos</span>
+            </p>
+            <h3 id="kpiWeekHallazgos" class="title-md mb-0">-</h3>
+          </article>
+          <article class="kpi-card">
+            <p class="meta mb-1 kpi-meta">
+              <span class="kpi-period period-month">Mes</span>
+              <span class="kpi-label">Hallazgos</span>
+            </p>
+            <h3 id="kpiMonthHallazgos" class="title-md mb-0">-</h3>
+          </article>
+        </section>
+
+        <section class="kpi-block mb-3" id="supervisorKpiBlock">
+          <h3 class="title-sm mb-2">Supervisiones por supervisor</h3>
+          <div class="table-wrap">
+            <table class="table table-sm align-middle mb-0" id="supervisorTable">
+              <thead>
+                <tr>
+                  <th>Supervisor</th>
+                  <th>Hoy</th>
+                  <th>Semana</th>
+                  <th>Mes</th>
+                  <th>Hallazgos mes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" class="text-muted">Sin datos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="kpi-block mb-3" id="trendKpiBlock">
+          <h3 class="title-sm mb-2">Tendencia de hallazgos (7 dias)</h3>
+          <div class="table-wrap">
+            <table class="table table-sm align-middle mb-0" id="trendTable">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Hallazgos</th>
+                  <th>Supervisiones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="3" class="text-muted">Sin datos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="kpi-block mb-3" id="rankingKpiBlock">
+          <h3 class="title-sm mb-2">Ranking de areas (mes)</h3>
+          <div class="table-wrap">
+            <table class="table table-sm align-middle mb-0" id="areaTable">
+              <thead>
+                <tr>
+                  <th>Area</th>
+                  <th>Hallazgos</th>
+                  <th>Supervisiones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="3" class="text-muted">Sin datos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="kpi-block mb-3" id="timeKpiBlock">
+          <h3 class="title-sm mb-2">Tiempos de supervision</h3>
+          <p id="timeGlobal" class="mb-2 text-muted">Promedio global: - | P90: -</p>
+          <div class="table-wrap">
+            <table class="table table-sm align-middle mb-0" id="timeBySupervisorTable">
+              <thead>
+                <tr>
+                  <th>Supervisor</th>
+                  <th>Promedio (min)</th>
+                  <th>P90 (min)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="3" class="text-muted">Sin datos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <div id="desboarMessage" class="status-slot mt-3" aria-live="polite"></div>
       </section>

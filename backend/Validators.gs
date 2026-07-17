@@ -10,6 +10,17 @@ function validateTokenPayload(payload) {
   }
 }
 
+function validateDashboardKpiSummaryPayload(payload) {
+  validateTokenPayload(payload);
+
+  if (payload && payload.windowDays !== undefined && payload.windowDays !== null && payload.windowDays !== "") {
+    var windowDays = Number(payload.windowDays);
+    if (!isFinite(windowDays) || windowDays < 7 || windowDays > 90) {
+      throw buildError("windowDays fuera de rango (7 a 90)", "BAD_REQUEST");
+    }
+  }
+}
+
 function validateQrPayload(payload) {
   var qrCode = String((payload && payload.qrCode) || "").trim();
   if (!qrCode) {

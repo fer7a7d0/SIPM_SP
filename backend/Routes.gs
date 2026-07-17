@@ -12,6 +12,8 @@ function routeAction(action, payload) {
       return logoutController(payload);
     case "dashboard.stats":
       return dashboardStatsController(payload);
+    case "dashboard.kpiSummary":
+      return dashboardKpiSummaryController(payload);
     case "qr.validate":
       return qrValidateController(payload);
     case "supervision.start":

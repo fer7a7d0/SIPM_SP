@@ -18,6 +18,11 @@ function dashboardStatsController(payload) {
   return dashboardStatsService(payload);
 }
 
+function dashboardKpiSummaryController(payload) {
+  validateDashboardKpiSummaryPayload(payload);
+  return dashboardKpiSummaryService(payload);
+}
+
 function qrValidateController(payload) {
   validateQrPayload(payload);
   validateTokenPayload(payload);

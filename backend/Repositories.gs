@@ -267,6 +267,24 @@ function listAnswersBySupervisionId(supervisionId) {
   return results;
 }
 
+function listAllAnswers() {
+  var rows = getDataRows(SHEET_NAMES.respuestas);
+  var results = [];
+
+  for (var i = 0; i < rows.length; i += 1) {
+    var row = rows[i];
+    results.push({
+      supervisionId: String(row[0] || "").trim(),
+      questionId: String(row[1] || "").trim(),
+      response: String(row[2] || "").trim(),
+      comment: String(row[3] || "").trim(),
+      photoUrl: String(row[4] || "").trim()
+    });
+  }
+
+  return results;
+}
+
 function mapUsersById() {
   var rows = getDataRows(SHEET_NAMES.usuarios);
   var map = {};
