@@ -6,7 +6,7 @@ const dashboardMessage = document.getElementById("dashboardMessage");
 const logoutButton = document.getElementById("logoutButton");
 const scanQrBtn = document.getElementById("scanQrBtn");
 const historyBtn = document.getElementById("historyBtn");
-const desboarBtn = document.getElementById("desboarBtn");
+const indicadoresBtn = document.getElementById("indicadoresBtn");
 
 init();
 
@@ -24,8 +24,8 @@ async function init() {
   historyBtn.addEventListener("click", () => {
     window.location.href = ROUTES.historial;
   });
-  desboarBtn.addEventListener("click", () => {
-    window.location.href = ROUTES.desboar;
+  indicadoresBtn.addEventListener("click", () => {
+    window.location.href = ROUTES.indicadores;
   });
 }
 

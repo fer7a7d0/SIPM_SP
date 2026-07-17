@@ -12,7 +12,7 @@ export const STORAGE_KEYS = {
 export const ROUTES = {
   login: "login.html",
   dashboard: "dashboard.html",
-  desboar: "desboar.html",
+  indicadores: "indicadores.html",
   scanQr: "escaner.html",
   supervision: "supervision.html",
   resumen: "resumen.html",
