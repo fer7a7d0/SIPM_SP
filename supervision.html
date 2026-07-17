@@ -17,8 +17,13 @@
   <body>
     <main class="container-fluid px-3 py-3">
       <section class="surface dashboard-surface mx-auto p-3">
-        <p class="eyebrow mb-1">Supervision</p>
-        <h1 class="title-lg mb-3">Checklist de supervision</h1>
+        <header class="d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <p class="eyebrow mb-1">Supervision</p>
+            <h1 class="title-lg">Checklist de supervision</h1>
+          </div>
+          <a class="btn btn-outline-dark btn-sm" href="dashboard.html">Volver</a>
+        </header>
 
         <div class="card card-soft mb-3">
           <div class="card-body">
@@ -38,7 +43,6 @@
 
         <div class="d-grid gap-2">
           <button id="continueChecklistBtn" class="btn btn-brand btn-lg">Continuar a resumen</button>
-          <a class="btn btn-dark btn-lg" href="dashboard.html">Volver al dashboard</a>
         </div>
 
         <div id="supervisionMessage" class="status-slot mt-3" aria-live="polite"></div>
