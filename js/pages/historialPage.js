@@ -71,7 +71,6 @@ async function init() {
 
   await loadCatalogs();
   await restoreViewState();
-  setMessage("Selecciona filtros y presiona Buscar para consultar el historial.", "");
 }
 
 async function loadCatalogs() {
@@ -416,11 +415,7 @@ function saveCurrentState(patch = {}) {
 
 async function restoreViewState() {
   const state = getSavedState();
-  if (!state) {
-    return;
-  }
-
-  const filters = state.filters || {};
+  const filters = (state && state.filters) || {};
   filterDate.value = String(filters.fecha || "");
   if (filters.supervisorId) {
     filterSupervisor.value = String(filters.supervisorId || "");
@@ -429,21 +424,13 @@ async function restoreViewState() {
     filterArea.value = String(filters.areaId || "");
   }
 
-  const shouldSearch = Boolean(state.hasSearch || filters.fecha || filters.supervisorId || filters.areaId || state.detailSupervisionId);
-  if (!shouldSearch) {
-    if (typeof state.scrollY === "number") {
-      window.scrollTo(0, state.scrollY);
-    }
-    return;
-  }
-
   await onSearch();
 
-  if (state.detailSupervisionId) {
+  if (state && state.detailSupervisionId) {
     await loadDetail(String(state.detailSupervisionId));
   }
 
-  if (typeof state.scrollY === "number") {
+  if (state && typeof state.scrollY === "number") {
     window.setTimeout(() => {
       window.scrollTo(0, state.scrollY);
     }, 0);
