@@ -13,6 +13,10 @@ const detailModal = document.getElementById("detailModal") || document.getElemen
 const detailBackdrop = document.getElementById("detailBackdrop");
 const closeDetailBtn = document.getElementById("closeDetailBtn");
 const detailBody = document.getElementById("detailBody");
+const photoViewer = document.getElementById("photoViewer");
+const photoViewerBackdrop = document.getElementById("photoViewerBackdrop");
+const closePhotoViewerBtn = document.getElementById("closePhotoViewerBtn");
+const photoViewerImage = document.getElementById("photoViewerImage");
 const HISTORY_STATE_KEY = "sipm_history_view_state";
 
 let session = null;
@@ -40,6 +44,24 @@ async function init() {
   if (detailBackdrop) {
     detailBackdrop.addEventListener("click", closeDetailModal);
   }
+  if (closePhotoViewerBtn) {
+    closePhotoViewerBtn.addEventListener("click", closePhotoViewer);
+  }
+  if (photoViewerBackdrop) {
+    photoViewerBackdrop.addEventListener("click", closePhotoViewer);
+  }
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      if (photoViewer && !photoViewer.hidden) {
+        closePhotoViewer();
+        return;
+      }
+      if (detailModal && !detailModal.hidden) {
+        closeDetailModal();
+      }
+    }
+  });
 
   window.addEventListener("pagehide", () => {
     saveCurrentState();
@@ -205,7 +227,7 @@ function renderDetail(data) {
     block.className = "detail-answer-item";
 
     const photoLink = item.photoUrl
-      ? `<a href="${item.photoUrl}" target="_blank" rel="noopener noreferrer">Ver fotografia</a>`
+      ? `<button type="button" class="photo-action-btn" data-photo-url="${item.photoUrl}">Ver fotografia</button>`
       : "Sin fotografia";
 
     block.innerHTML = `
@@ -218,10 +240,11 @@ function renderDetail(data) {
 
     list.appendChild(block);
 
-    const link = block.querySelector("a");
-    if (link) {
-      link.addEventListener("click", () => {
+    const photoButton = block.querySelector("[data-photo-url]");
+    if (photoButton) {
+      photoButton.addEventListener("click", () => {
         saveCurrentState();
+        openPhotoViewer(photoButton.getAttribute("data-photo-url"));
       });
     }
   });
@@ -234,16 +257,49 @@ function openDetailModal() {
     return;
   }
   detailModal.hidden = false;
-  document.body.classList.add("modal-open");
+  syncBodyModalState();
 }
 
 function closeDetailModal() {
   if (!detailModal) {
     return;
   }
+  closePhotoViewer();
   detailModal.hidden = true;
   currentDetailSupervisionId = "";
   saveCurrentState();
+  syncBodyModalState();
+}
+
+function openPhotoViewer(photoUrl) {
+  const url = String(photoUrl || "").trim();
+  if (!photoViewer || !photoViewerImage || !url) {
+    return;
+  }
+
+  photoViewerImage.src = url;
+  photoViewer.hidden = false;
+  syncBodyModalState();
+}
+
+function closePhotoViewer() {
+  if (!photoViewer || !photoViewerImage) {
+    return;
+  }
+
+  photoViewer.hidden = true;
+  photoViewerImage.removeAttribute("src");
+  syncBodyModalState();
+}
+
+function syncBodyModalState() {
+  const detailOpen = Boolean(detailModal && !detailModal.hidden);
+  const photoOpen = Boolean(photoViewer && !photoViewer.hidden);
+
+  if (detailOpen || photoOpen) {
+    document.body.classList.add("modal-open");
+    return;
+  }
   document.body.classList.remove("modal-open");
 }
 
