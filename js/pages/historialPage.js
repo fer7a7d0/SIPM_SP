@@ -21,6 +21,8 @@ const HISTORY_STATE_KEY = "sipm_history_view_state";
 
 let session = null;
 let currentDetailSupervisionId = "";
+let currentPhotoOriginalUrl = "";
+let currentPhotoFallbackUrl = "";
 
 init();
 
@@ -277,7 +279,27 @@ function openPhotoViewer(photoUrl) {
     return;
   }
 
-  photoViewerImage.src = url;
+  const renderUrl = buildPhotoRenderUrl(url);
+  const fallbackUrl = buildPhotoFallbackUrl(url, renderUrl);
+
+  currentPhotoOriginalUrl = url;
+  currentPhotoFallbackUrl = fallbackUrl;
+  photoViewerImage.src = renderUrl;
+
+  photoViewerImage.onerror = () => {
+    if (currentPhotoFallbackUrl && photoViewerImage.src !== currentPhotoFallbackUrl) {
+      photoViewerImage.src = currentPhotoFallbackUrl;
+      return;
+    }
+
+    if (currentPhotoOriginalUrl && photoViewerImage.src !== currentPhotoOriginalUrl) {
+      photoViewerImage.src = currentPhotoOriginalUrl;
+      return;
+    }
+
+    setMessage("No se pudo visualizar la fotografia en el visor. Intenta abrirla desde Google Drive.", "error");
+  };
+
   photoViewer.hidden = false;
   syncBodyModalState();
 }
@@ -288,8 +310,63 @@ function closePhotoViewer() {
   }
 
   photoViewer.hidden = true;
+  photoViewerImage.onerror = null;
   photoViewerImage.removeAttribute("src");
+  currentPhotoOriginalUrl = "";
+  currentPhotoFallbackUrl = "";
   syncBodyModalState();
+}
+
+function buildPhotoRenderUrl(photoUrl) {
+  const url = String(photoUrl || "").trim();
+  if (!url) {
+    return "";
+  }
+
+  const driveId = extractGoogleDriveFileId(url);
+  if (!driveId) {
+    return url;
+  }
+
+  // URL de thumbnail suele funcionar mejor para render directo en IMG.
+  return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w1600`;
+}
+
+function buildPhotoFallbackUrl(photoUrl, renderUrl) {
+  const url = String(photoUrl || "").trim();
+  if (!url) {
+    return "";
+  }
+
+  const driveId = extractGoogleDriveFileId(url);
+  if (!driveId) {
+    return "";
+  }
+
+  const direct = `https://drive.google.com/uc?export=view&id=${encodeURIComponent(driveId)}`;
+  if (direct !== String(renderUrl || "")) {
+    return direct;
+  }
+  return "";
+}
+
+function extractGoogleDriveFileId(url) {
+  const raw = String(url || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  const pathMatch = raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (pathMatch && pathMatch[1]) {
+    return pathMatch[1];
+  }
+
+  const idParamMatch = raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idParamMatch && idParamMatch[1]) {
+    return idParamMatch[1];
+  }
+
+  return "";
 }
 
 function syncBodyModalState() {
