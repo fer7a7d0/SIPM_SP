@@ -1,1 +1,1 @@
-# Registro de Supervisión 
+# Registro de supervisión
