@@ -2,12 +2,10 @@ import "../router.js";
 import { ROUTES } from "../config.js";
 import { getSession } from "../services/authService.js";
 import { validateQrCode } from "../services/qrService.js";
-import { listAvailableAreas, startSupervision } from "../services/supervisionService.js";
+import { startSupervision } from "../services/supervisionService.js";
 import { formatGps, getCurrentPosition } from "../utils/geo.js";
 
 const qrInput = document.getElementById("qrInput");
-const areaSelect = document.getElementById("areaSelect");
-const startManualAreaBtn = document.getElementById("startManualAreaBtn");
 const validateQrBtn = document.getElementById("validateQrBtn");
 const gpsStatus = document.getElementById("gpsStatus");
 const scannerMessage = document.getElementById("scannerMessage");
@@ -24,7 +22,6 @@ let isSupervisorMode = false;
 let isSubmitting = false;
 let manualInputTimer = null;
 let lastProcessedQr = "";
-let manualAreasLoaded = false;
 
 init();
 
@@ -40,10 +37,8 @@ async function init() {
 
   setupQrMode();
   setQrControlsEnabled(false);
-  syncManualAreaState();
   validateQrBtn.hidden = true;
 
-  startManualAreaBtn.addEventListener("click", onStartManualArea);
   validateQrBtn.addEventListener("click", () => {
     processQrCode(String(qrInput.value || ""));
   });
@@ -69,7 +64,6 @@ async function init() {
     }
   });
 
-  await loadAreas();
   await captureGps();
   window.addEventListener("beforeunload", () => {
     stopCamera();
@@ -92,39 +86,6 @@ function setQrControlsEnabled(enabled) {
   } else {
     qrInput.disabled = false;
   }
-
-  syncManualAreaState();
-}
-
-async function loadAreas() {
-  try {
-    const areas = await listAvailableAreas(activeSession.token);
-    areaSelect.innerHTML = '<option value="">Selecciona un area</option>';
-
-    areas.forEach((area) => {
-      const option = document.createElement("option");
-      option.value = area.id;
-      option.textContent = area.name;
-      areaSelect.appendChild(option);
-    });
-
-    manualAreasLoaded = true;
-    syncManualAreaState();
-  } catch (error) {
-    manualAreasLoaded = false;
-    syncManualAreaState();
-    setMessage(error.message || "No se pudo cargar el listado de areas.", "error");
-  }
-}
-
-function syncManualAreaState() {
-  if (!areaSelect || !startManualAreaBtn) {
-    return;
-  }
-
-  const canUseManualStart = Boolean(gpsPosition) && manualAreasLoaded && !isSubmitting;
-  areaSelect.disabled = !manualAreasLoaded || isSubmitting;
-  startManualAreaBtn.disabled = !canUseManualStart;
 }
 
 async function captureGps() {
@@ -139,8 +100,6 @@ async function captureGps() {
     gpsStatus.textContent = "No disponible";
     setMessage(error.message, "error");
   }
-
-  syncManualAreaState();
 }
 
 async function processQrCode(rawValue) {
@@ -199,43 +158,6 @@ async function onValidateAndStart(qrCode) {
   } finally {
     isSubmitting = false;
     validateQrBtn.disabled = false;
-    syncManualAreaState();
-  }
-}
-
-async function onStartManualArea() {
-  const areaId = String(areaSelect.value || "").trim();
-  if (!areaId) {
-    setMessage("Selecciona un area para iniciar supervision manual.", "error");
-    return;
-  }
-
-  if (isSubmitting) {
-    return;
-  }
-
-  if (!gpsPosition) {
-    setMessage("La ubicacion GPS es obligatoria para iniciar supervision.", "error");
-    await captureGps();
-    if (!gpsPosition) {
-      return;
-    }
-  }
-
-  try {
-    isSubmitting = true;
-    syncManualAreaState();
-    setValidationState(true);
-    setMessage("Iniciando supervision manual...", "");
-    await stopCamera();
-    await launchSupervision({ areaId });
-    window.location.replace(ROUTES.supervision);
-  } catch (error) {
-    setValidationState(false);
-    setMessage(error.message || "No se pudo iniciar supervision manual.", "error");
-  } finally {
-    isSubmitting = false;
-    syncManualAreaState();
   }
 }
 
@@ -305,7 +227,7 @@ async function stopCamera() {
 }
 
 function setValidationState(enabled) {
-  const targets = [qrInput, qrReader, gpsCard, validateQrBtn, startCameraBtn, stopCameraBtn, areaSelect, startManualAreaBtn];
+  const targets = [qrInput, qrReader, gpsCard, validateQrBtn, startCameraBtn, stopCameraBtn];
 
   targets.forEach((element) => {
     if (!element) {
@@ -313,7 +235,7 @@ function setValidationState(enabled) {
     }
     element.classList.toggle("scan-valid", enabled && (element === qrInput || element === qrReader));
     element.classList.toggle("scan-valid-soft", enabled && (element === gpsCard));
-    element.classList.toggle("scan-valid-button", enabled && (element === validateQrBtn || element === startCameraBtn || element === stopCameraBtn || element === startManualAreaBtn));
+    element.classList.toggle("scan-valid-button", enabled && (element === validateQrBtn || element === startCameraBtn || element === stopCameraBtn));
   });
 }
 
