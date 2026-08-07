@@ -23,6 +23,11 @@ function dashboardKpiSummaryController(payload) {
   return dashboardKpiSummaryService(payload);
 }
 
+function areaListController(payload) {
+  validateAreaListPayload(payload);
+  return areaListService(payload);
+}
+
 function qrValidateController(payload) {
   validateQrPayload(payload);
   validateTokenPayload(payload);

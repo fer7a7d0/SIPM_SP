@@ -2,6 +2,10 @@ var SHEET_NAMES = {
   usuarios: "Usuarios",
   areas: "Areas",
   preguntas: "Preguntas",
+  checklists: "Checklists",
+  secciones: "Secciones",
+  checklistPreguntas: "ChecklistPreguntas",
+  areaChecklist: "AreaChecklist",
   supervisiones: "Supervisiones",
   respuestas: "Respuestas"
 };
@@ -10,8 +14,30 @@ var SHEET_HEADERS = {
   Usuarios: ["ID", "Nombre", "Rol"],
   Areas: ["ID", "Area", "Codigo QR"],
   Preguntas: ["ID", "Categoria", "Pregunta", "Orden", "Obliga comentario", "Obliga fotografia"],
+  Checklists: ["ID", "Nombre", "Descripcion", "Activo"],
+  Secciones: ["ID", "ID Checklist", "Nombre", "Orden"],
+  ChecklistPreguntas: ["ID Checklist", "ID Seccion", "ID Pregunta", "Orden", "Obligatoria"],
+  AreaChecklist: ["ID Area", "ID Checklist", "Orden", "Activo"],
   Supervisiones: ["ID", "Fecha", "Hora inicio", "Hora fin", "Duracion", "Supervisor", "Area", "GPS"],
-  Respuestas: ["ID Supervision", "ID Pregunta", "Respuesta", "Comentario", "URL Fotografia"]
+  Respuestas: [
+    "ID Supervision",
+    "ID Area",
+    "Area",
+    "ID Checklist",
+    "Checklist",
+    "ID Seccion",
+    "Seccion",
+    "ID Pregunta",
+    "Categoria",
+    "Pregunta",
+    "Orden checklist",
+    "Orden seccion",
+    "Orden pregunta",
+    "Obligatoria",
+    "Respuesta",
+    "Comentario",
+    "URL Fotografia"
+  ]
 };
 
 function ensureSheetStructure() {
@@ -31,12 +57,36 @@ function ensureSheetStructure() {
       sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
       sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
       sheet.setFrozenRows(1);
+      continue;
     }
+
+    syncSheetHeaders(sheet, headers);
   }
 
   seedUsersIfEmpty();
   seedAreasIfEmpty();
   seedQuestionsIfEmpty();
+}
+
+function syncSheetHeaders(sheet, headers) {
+  var width = headers.length;
+  var existingWidth = Math.max(sheet.getLastColumn(), width);
+  var currentHeaders = sheet.getRange(1, 1, 1, existingWidth).getValues()[0];
+  var nextHeaders = [];
+
+  for (var i = 0; i < headers.length; i += 1) {
+    nextHeaders.push(headers[i]);
+  }
+
+  if (existingWidth > headers.length) {
+    for (var j = headers.length; j < existingWidth; j += 1) {
+      nextHeaders.push(currentHeaders[j] || "");
+    }
+  }
+
+  sheet.getRange(1, 1, 1, nextHeaders.length).setValues([nextHeaders]);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
+  sheet.setFrozenRows(1);
 }
 
 function seedUsersIfEmpty() {

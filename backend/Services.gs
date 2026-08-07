@@ -428,6 +428,20 @@ function buildTimeMetrics(items) {
   };
 }
 
+function areaListService(payload) {
+  decodeAndVerifyToken(payload.token);
+
+  return {
+    areas: listAreasOrdered().map(function (item) {
+      return {
+        id: item.id,
+        name: item.area,
+        qrCode: item.qrCode
+      };
+    })
+  };
+}
+
 function qrValidateService(payload) {
   decodeAndVerifyToken(payload.token);
 
@@ -447,9 +461,9 @@ function qrValidateService(payload) {
 
 function supervisionStartService(payload) {
   var session = decodeAndVerifyToken(payload.token);
-  var area = findAreaByQrCode(payload.qrCode);
+  var area = resolveAreaFromPayload(payload);
   if (!area) {
-    throw buildError("Codigo QR no registrado", "QR_NOT_FOUND");
+    throw buildError("Area no valida para iniciar supervision", "AREA_NOT_FOUND");
   }
 
   var now = new Date();
@@ -468,29 +482,21 @@ function supervisionStartService(payload) {
 
 function supervisionChecklistService(payload) {
   decodeAndVerifyToken(payload.token);
-
-  var rawQuestions = listQuestionsOrdered();
-  var questions = rawQuestions.map(function (item) {
-    return {
-      id: item.id,
-      category: item.categoria,
-      question: item.pregunta,
-      order: item.orden,
-      requiresComment: item.obligaComentario,
-      requiresPhoto: item.obligaFotografia
-    };
-  });
+  var areaId = String(payload.areaId || "").trim();
+  var effectiveChecklist = buildEffectiveChecklistForArea(areaId);
 
   return {
-    questions: questions
+    mode: effectiveChecklist.mode,
+    area: effectiveChecklist.area,
+    checklists: effectiveChecklist.checklists,
+    questions: effectiveChecklist.questions.map(mapChecklistQuestionForClient)
   };
 }
 
 function supervisionSaveService(payload) {
   var session = decodeAndVerifyToken(payload.token);
-  var areasMap = mapAreasById();
   var areaId = String(payload.areaId || "").trim();
-  var area = areasMap[areaId] || null;
+  var area = findAreaById(areaId);
   if (!area) {
     throw buildError("Area no valida para guardar supervision", "AREA_NOT_FOUND");
   }
@@ -503,6 +509,8 @@ function supervisionSaveService(payload) {
 
   var completion = buildCompletionDataFromDates(startDate, endDate);
   var supervisionId = "SUPV-" + Utilities.formatDate(endDate, Session.getScriptTimeZone(), "yyyyMMddHHmmss") + "-" + String(Math.floor(Math.random() * 900) + 100);
+  var effectiveChecklist = buildEffectiveChecklistForArea(areaId);
+  var effectiveQuestions = effectiveChecklist.questions || [];
 
   appendSupervisionRow({
     id: supervisionId,
@@ -515,7 +523,6 @@ function supervisionSaveService(payload) {
     gps: String(payload.gps || "").trim()
   });
 
-  var rawQuestions = listQuestionsOrdered();
   var answersById = {};
   var answers = payload.answers || [];
   for (var j = 0; j < answers.length; j += 1) {
@@ -526,34 +533,42 @@ function supervisionSaveService(payload) {
     }
   }
 
-  for (var k = 0; k < rawQuestions.length; k += 1) {
-    var question = rawQuestions[k];
+  for (var k = 0; k < effectiveQuestions.length; k += 1) {
+    var question = effectiveQuestions[k];
     var currentAnswer = answersById[question.id];
-    if (!currentAnswer) {
+    if (!currentAnswer && question.obligatory) {
       throw buildError("Faltan respuestas del checklist", "CHECKLIST_INCOMPLETE");
+    }
+
+    if (!currentAnswer) {
+      currentAnswer = {};
     }
 
     var response = String(currentAnswer.response || "").trim();
     var comment = String(currentAnswer.comment || "").trim();
     var photoDataUrl = String(currentAnswer.photoDataUrl || "").trim();
 
-    if (response !== "Cumple" && response !== "No cumple" && response !== "No aplica") {
+    if (!response && question.obligatory) {
+      throw buildError("La pregunta " + question.id + " es obligatoria", "CHECKLIST_REQUIRED_ANSWER");
+    }
+
+    if (response && response !== "Cumple" && response !== "No cumple" && response !== "No aplica") {
       throw buildError("Respuesta no valida para la pregunta " + question.id, "CHECKLIST_INVALID_RESPONSE");
     }
 
-    if (question.obligaComentario && !comment) {
+    if (response && question.requiresComment && !comment) {
       throw buildError("La pregunta " + question.id + " requiere comentario", "CHECKLIST_REQUIRED_COMMENT");
     }
 
-    if (question.obligaFotografia && !photoDataUrl) {
+    if (response && question.requiresPhoto && !photoDataUrl) {
       throw buildError("La pregunta " + question.id + " requiere fotografia", "CHECKLIST_REQUIRED_PHOTO");
     }
   }
 
   var photosStored = 0;
-  for (var m = 0; m < rawQuestions.length; m += 1) {
-    var q = rawQuestions[m];
-    var a = answersById[q.id];
+  for (var m = 0; m < effectiveQuestions.length; m += 1) {
+    var q = effectiveQuestions[m];
+    var a = answersById[q.id] || {};
     var photoUrl = "";
     var answerPhotoDataUrl = String(a.photoDataUrl || "").trim();
 
@@ -564,7 +579,19 @@ function supervisionSaveService(payload) {
 
     appendAnswerRow({
       supervisionId: supervisionId,
+      areaId: q.areaId,
+      areaName: q.areaName,
+      checklistId: q.checklistId,
+      checklistName: q.checklistName,
+      sectionId: q.sectionId,
+      sectionName: q.sectionName,
       questionId: q.id,
+      category: q.category,
+      questionText: q.question,
+      checklistOrder: q.checklistOrder,
+      sectionOrder: q.sectionOrder,
+      questionOrder: q.order,
+      obligatory: q.obligatory ? "SI" : "NO",
       response: String(a.response || "").trim(),
       comment: String(a.comment || "").trim(),
       photoUrl: photoUrl
@@ -574,7 +601,7 @@ function supervisionSaveService(payload) {
   return {
     saved: true,
     supervisionId: supervisionId,
-    answeredCount: rawQuestions.length,
+    answeredCount: effectiveQuestions.length,
     photosStored: photosStored,
     fecha: completion.fecha,
     horaInicio: completion.horaInicio,
@@ -712,13 +739,30 @@ function historyDetailService(payload) {
   var answers = listAnswersBySupervisionId(supervision.id).map(function (item) {
     var question = questionsMap[item.questionId] || null;
     return {
+      checklistId: item.checklistId,
+      checklistName: item.checklistName,
+      sectionId: item.sectionId,
+      sectionName: item.sectionName,
       questionId: item.questionId,
-      category: question ? question.categoria : "",
-      question: question ? question.pregunta : item.questionId,
+      category: item.category || (question ? question.categoria : ""),
+      question: item.questionText || (question ? question.pregunta : item.questionId),
+      checklistOrder: Number(item.checklistOrder || 0),
+      sectionOrder: Number(item.sectionOrder || 0),
+      order: Number(item.questionOrder || 0),
       response: item.response,
       comment: item.comment,
       photoUrl: item.photoUrl
     };
+  }).sort(function (a, b) {
+    if (Number(a.checklistOrder || 0) !== Number(b.checklistOrder || 0)) {
+      return Number(a.checklistOrder || 0) - Number(b.checklistOrder || 0);
+    }
+
+    if (Number(a.sectionOrder || 0) !== Number(b.sectionOrder || 0)) {
+      return Number(a.sectionOrder || 0) - Number(b.sectionOrder || 0);
+    }
+
+    return Number(a.order || 0) - Number(b.order || 0);
   });
 
   return {
@@ -735,6 +779,39 @@ function historyDetailService(payload) {
       gps: supervision.gps
     },
     answers: answers
+  };
+}
+
+function resolveAreaFromPayload(payload) {
+  var areaId = String((payload && payload.areaId) || "").trim();
+  if (areaId) {
+    return findAreaById(areaId);
+  }
+
+  var qrCode = String((payload && payload.qrCode) || "").trim();
+  if (!qrCode) {
+    return null;
+  }
+
+  return findAreaByQrCode(qrCode);
+}
+
+function mapChecklistQuestionForClient(item) {
+  return {
+    id: item.id,
+    category: item.category,
+    question: item.question,
+    order: item.order,
+    checklistId: item.checklistId,
+    checklistName: item.checklistName,
+    sectionId: item.sectionId,
+    sectionName: item.sectionName,
+    checklistOrder: item.checklistOrder,
+    sectionOrder: item.sectionOrder,
+    requiresComment: item.requiresComment,
+    requiresPhoto: item.requiresPhoto,
+    obligatory: item.obligatory,
+    source: item.source
   };
 }
 

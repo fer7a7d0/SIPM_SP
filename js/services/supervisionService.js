@@ -8,6 +8,11 @@ export async function startSupervision(payload) {
   return data.supervision;
 }
 
+export async function listAvailableAreas(token) {
+  const data = await apiRequest("areas.list", { token });
+  return data.areas || [];
+}
+
 export async function getChecklist(payload) {
   const data = await apiRequest("supervision.getChecklist", payload);
   return data;

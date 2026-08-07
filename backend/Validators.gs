@@ -21,6 +21,10 @@ function validateDashboardKpiSummaryPayload(payload) {
   }
 }
 
+function validateAreaListPayload(payload) {
+  validateTokenPayload(payload);
+}
+
 function validateQrPayload(payload) {
   var qrCode = String((payload && payload.qrCode) || "").trim();
   if (!qrCode) {
@@ -30,7 +34,12 @@ function validateQrPayload(payload) {
 
 function validateSupervisionStartPayload(payload) {
   validateTokenPayload(payload);
-  validateQrPayload(payload);
+
+  var areaId = String((payload && payload.areaId) || "").trim();
+  var qrCode = String((payload && payload.qrCode) || "").trim();
+  if (!areaId && !qrCode) {
+    throw buildError("Area o codigo QR requerido para iniciar supervision", "BAD_REQUEST");
+  }
 
   var gps = String((payload && payload.gps) || "").trim();
   if (!gps) {
@@ -40,6 +49,11 @@ function validateSupervisionStartPayload(payload) {
 
 function validateSupervisionChecklistPayload(payload) {
   validateTokenPayload(payload);
+
+  var areaId = String((payload && payload.areaId) || "").trim();
+  if (!areaId) {
+    throw buildError("Area requerida para cargar checklist", "BAD_REQUEST");
+  }
 }
 
 function validateSupervisionSavePayload(payload) {

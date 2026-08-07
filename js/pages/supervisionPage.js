@@ -20,6 +20,7 @@ const IMAGE_JPEG_QUALITY = 0.72;
 
 let activeSupervision = null;
 let checklistQuestions = [];
+let checklistGroups = [];
 const answerState = {};
 
 init();
@@ -42,7 +43,8 @@ async function init() {
   try {
     setMessage("Cargando checklist...", "");
     const checklistPayload = {
-      token: session.token
+      token: session.token,
+      areaId: activeSupervision.areaId
     };
     if (activeSupervision.id) {
       checklistPayload.supervisionId = activeSupervision.id;
@@ -52,7 +54,11 @@ async function init() {
       ...checklistPayload
     });
 
+    checklistGroups = data.checklists || [];
     checklistQuestions = data.questions || [];
+    if (data.area && data.area.name) {
+      areaNameEl.textContent = data.area.name;
+    }
     seedAnswerState(checklistQuestions, activeSupervision.answers || {});
     renderChecklist();
     recalculateCounters();
@@ -70,8 +76,13 @@ function seedAnswerState(questions, existing) {
       response: prev.response || "",
       comment: prev.comment || "",
       photoDataUrl: prev.photoDataUrl || "",
+      checklistId: question.checklistId || "",
+      checklistName: question.checklistName || "",
+      sectionId: question.sectionId || "",
+      sectionName: question.sectionName || "",
       requiresComment: Boolean(question.requiresComment),
-      requiresPhoto: Boolean(question.requiresPhoto)
+      requiresPhoto: Boolean(question.requiresPhoto),
+      obligatory: question.obligatory !== false
     };
   });
 }
@@ -85,107 +96,173 @@ function renderChecklist() {
     return;
   }
 
-  checklistQuestions.forEach((question, index) => {
-    const wrapper = document.createElement("article");
-    wrapper.className = "question-card";
-
-    const category = document.createElement("span");
-    category.className = "question-category";
-    category.textContent = question.category || "General";
-
-    const title = document.createElement("p");
-    title.className = "question-title";
-    title.textContent = `${index + 1}. ${question.question}`;
-
-    const requiresWrap = document.createElement("div");
-    if (question.requiresComment) {
-      const chip = document.createElement("span");
-      chip.className = "required-chip";
-      chip.textContent = "Obliga comentario";
-      requiresWrap.appendChild(chip);
+  const groups = checklistGroups.length > 0 ? checklistGroups : [
+    {
+      id: "LEGACY-GENERAL",
+      name: "Preguntas generales",
+      description: "",
+      sections: [
+        {
+          id: "LEGACY-SECTION",
+          name: "General",
+          questions: checklistQuestions
+        }
+      ]
     }
-    if (question.requiresPhoto) {
-      const chip = document.createElement("span");
-      chip.className = "required-chip";
-      chip.textContent = "Obliga foto";
-      requiresWrap.appendChild(chip);
+  ];
+
+  groups.forEach((group) => {
+    const groupCard = document.createElement("section");
+    groupCard.className = "checklist-group";
+
+    const header = document.createElement("div");
+    header.className = "checklist-group-head";
+
+    const title = document.createElement("h3");
+    title.className = "checklist-group-title";
+    title.textContent = group.name || "Checklist";
+
+    header.appendChild(title);
+
+    if (group.description) {
+      const description = document.createElement("p");
+      description.className = "checklist-group-description";
+      description.textContent = group.description;
+      header.appendChild(description);
     }
 
-    const select = document.createElement("select");
-    select.className = "form-select mt-2";
-    select.innerHTML = '<option value="">Selecciona respuesta</option>';
-    RESPONSE_OPTIONS.forEach((optionValue) => {
-      const opt = document.createElement("option");
-      opt.value = optionValue;
-      opt.textContent = optionValue;
-      select.appendChild(opt);
+    groupCard.appendChild(header);
+
+    (group.sections || []).forEach((section) => {
+      const sectionCard = document.createElement("div");
+      sectionCard.className = "section-card";
+
+      const sectionTitle = document.createElement("h4");
+      sectionTitle.className = "section-title";
+      sectionTitle.textContent = section.name || "Seccion";
+      sectionCard.appendChild(sectionTitle);
+
+      (section.questions || []).forEach((question) => {
+        sectionCard.appendChild(createQuestionCard(question));
+      });
+
+      groupCard.appendChild(sectionCard);
     });
-    select.value = answerState[question.id].response;
-    select.addEventListener("change", () => {
-      answerState[question.id].response = select.value;
+
+    checklistContainer.appendChild(groupCard);
+  });
+}
+
+function createQuestionCard(question) {
+  const questionIndex = checklistQuestions.findIndex((item) => item.id === question.id);
+  const state = answerState[question.id];
+  const wrapper = document.createElement("article");
+  wrapper.className = "question-card";
+
+  const category = document.createElement("span");
+  category.className = "question-category";
+  category.textContent = question.category || "General";
+
+  const title = document.createElement("p");
+  title.className = "question-title";
+  title.textContent = `${questionIndex + 1}. ${question.question}`;
+
+  const requiresWrap = document.createElement("div");
+  if (question.obligatory !== false) {
+    const chip = document.createElement("span");
+    chip.className = "required-chip";
+    chip.textContent = "Respuesta obligatoria";
+    requiresWrap.appendChild(chip);
+  }
+  if (question.requiresComment) {
+    const chip = document.createElement("span");
+    chip.className = "required-chip";
+    chip.textContent = "Obliga comentario";
+    requiresWrap.appendChild(chip);
+  }
+  if (question.requiresPhoto) {
+    const chip = document.createElement("span");
+    chip.className = "required-chip";
+    chip.textContent = "Obliga foto";
+    requiresWrap.appendChild(chip);
+  }
+
+  const select = document.createElement("select");
+  select.className = "form-select mt-2";
+  select.innerHTML = '<option value="">Selecciona respuesta</option>';
+  RESPONSE_OPTIONS.forEach((optionValue) => {
+    const opt = document.createElement("option");
+    opt.value = optionValue;
+    opt.textContent = optionValue;
+    select.appendChild(opt);
+  });
+  select.value = state.response;
+  select.addEventListener("change", () => {
+    state.response = select.value;
+    persistDraft();
+    recalculateCounters();
+  });
+
+  const comment = document.createElement("textarea");
+  comment.className = "form-control mt-2";
+  comment.rows = 2;
+  comment.placeholder = question.requiresComment ? "Comentario obligatorio" : "Comentario opcional";
+  comment.value = state.comment;
+  comment.addEventListener("input", () => {
+    state.comment = comment.value;
+    persistDraft();
+  });
+
+  const photoInputId = `photoInput-${question.id}`;
+
+  const photoInput = document.createElement("input");
+  photoInput.type = "file";
+  photoInput.accept = "image/*";
+  photoInput.capture = "environment";
+  photoInput.id = photoInputId;
+  photoInput.className = "photo-input";
+
+  const photoButton = document.createElement("label");
+  photoButton.className = "btn btn-outline-dark w-100 photo-action mt-2";
+  photoButton.setAttribute("for", photoInputId);
+  photoButton.textContent = "Agregar foto";
+
+  const preview = document.createElement("img");
+  preview.className = "photo-preview";
+  preview.alt = "Vista previa de evidencia";
+  preview.hidden = !state.photoDataUrl;
+  if (state.photoDataUrl) {
+    preview.src = state.photoDataUrl;
+  }
+
+  photoInput.addEventListener("change", async () => {
+    const file = photoInput.files && photoInput.files[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const dataUrl = await toCompressedDataUrl(file);
+      state.photoDataUrl = dataUrl;
+      preview.src = dataUrl;
+      preview.hidden = false;
       persistDraft();
       recalculateCounters();
-    });
-
-    const comment = document.createElement("textarea");
-    comment.className = "form-control mt-2";
-    comment.rows = 2;
-    comment.placeholder = question.requiresComment ? "Comentario obligatorio" : "Comentario opcional";
-    comment.value = answerState[question.id].comment;
-    comment.addEventListener("input", () => {
-      answerState[question.id].comment = comment.value;
-      persistDraft();
-    });
-
-    const photoInputId = `photoInput-${question.id}`;
-
-    const photoInput = document.createElement("input");
-    photoInput.type = "file";
-    photoInput.accept = "image/*";
-    photoInput.capture = "environment";
-    photoInput.id = photoInputId;
-    photoInput.className = "photo-input";
-    photoInput.addEventListener("change", async () => {
-      const file = photoInput.files && photoInput.files[0];
-      if (!file) {
-        return;
-      }
-
-      try {
-        const dataUrl = await toCompressedDataUrl(file);
-        answerState[question.id].photoDataUrl = dataUrl;
-        preview.src = dataUrl;
-        preview.hidden = false;
-        persistDraft();
-        recalculateCounters();
-      } catch (error) {
-        setMessage("No se pudo cargar la fotografia.", "error");
-      }
-    });
-
-    const photoButton = document.createElement("label");
-    photoButton.className = "btn btn-outline-dark w-100 photo-action mt-2";
-    photoButton.setAttribute("for", photoInputId);
-    photoButton.textContent = "Agregar foto";
-
-    const preview = document.createElement("img");
-    preview.className = "photo-preview";
-    preview.alt = "Vista previa de evidencia";
-    preview.hidden = !answerState[question.id].photoDataUrl;
-    if (answerState[question.id].photoDataUrl) {
-      preview.src = answerState[question.id].photoDataUrl;
+    } catch (error) {
+      setMessage("No se pudo cargar la fotografia.", "error");
     }
-
-    wrapper.appendChild(category);
-    wrapper.appendChild(title);
-    wrapper.appendChild(requiresWrap);
-    wrapper.appendChild(select);
-    wrapper.appendChild(comment);
-    wrapper.appendChild(photoButton);
-    wrapper.appendChild(photoInput);
-    wrapper.appendChild(preview);
-    checklistContainer.appendChild(wrapper);
   });
+
+  wrapper.appendChild(category);
+  wrapper.appendChild(title);
+  wrapper.appendChild(requiresWrap);
+  wrapper.appendChild(select);
+  wrapper.appendChild(comment);
+  wrapper.appendChild(photoButton);
+  wrapper.appendChild(photoInput);
+  wrapper.appendChild(preview);
+
+  return wrapper;
 }
 
 function recalculateCounters() {
@@ -209,15 +286,15 @@ function validateChecklist() {
     const question = questionsById[key];
     const index = i + 1;
 
-    if (!item.response) {
+    if (!item.response && item.obligatory) {
       return { ok: false, message: `Falta responder la pregunta ${index}.` };
     }
 
-    if (question && question.requiresComment && !String(item.comment || "").trim()) {
+    if (item.response && question && question.requiresComment && !String(item.comment || "").trim()) {
       return { ok: false, message: `La pregunta ${index} requiere comentario.` };
     }
 
-    if (question && question.requiresPhoto && !item.photoDataUrl) {
+    if (item.response && question && question.requiresPhoto && !item.photoDataUrl) {
       return { ok: false, message: `La pregunta ${index} requiere fotografia.` };
     }
   }
@@ -242,6 +319,7 @@ function onContinue() {
 function persistDraft() {
   updateActiveSupervision({
     answers: answerState,
+    checklistGroups,
     totalQuestions: checklistQuestions.length,
     answeredQuestions: Object.values(answerState).filter((item) => Boolean(item.response)).length,
     photoCount: Object.values(answerState).filter((item) => Boolean(item.photoDataUrl)).length

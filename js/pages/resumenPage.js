@@ -31,6 +31,7 @@ function renderSummary() {
   const start = new Date(active.startAt);
   const durationMin = Math.max(0, Math.round((now.getTime() - start.getTime()) / 60000));
   const answers = Object.values(active.answers || {});
+  const answeredCount = answers.filter((item) => Boolean(item.response)).length;
   const photoCount = answers.filter((item) => Boolean(item.photoDataUrl)).length;
 
   const rows = [
@@ -40,7 +41,7 @@ function renderSummary() {
     { label: "Hora inicio", value: formatTimeEs(active.startAt) },
     { label: "Hora termino", value: formatTimeEs(now) },
     { label: "Duracion", value: `${durationMin} min` },
-    { label: "Respuestas", value: String(answers.length) },
+    { label: "Respuestas", value: `${answeredCount}/${answers.length}` },
     { label: "Fotografias", value: String(photoCount) }
   ];
 
