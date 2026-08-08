@@ -25,6 +25,10 @@ let manualInputTimer = null;
 let lastProcessedQr = "";
 let successAnimationTimer = null;
 
+function updateValidateButtonState() {
+  // El flujo manual sigue usando el proceso de validación sin necesitar un botón visible.
+}
+
 init();
 
 async function init() {
@@ -44,8 +48,6 @@ async function init() {
   startCameraBtn.addEventListener("click", startCamera);
   stopCameraBtn.addEventListener("click", stopCamera);
   qrInput.addEventListener("input", () => {
-    updateValidateButtonState();
-
     if (isSupervisorMode || !gpsPosition) {
       return;
     }
@@ -246,7 +248,7 @@ function setValidationState(enabled, success = false) {
     successAnimationTimer = null;
   }
 
-  const targets = [qrInput, qrReader, gpsCard, validateQrBtn, startCameraBtn, stopCameraBtn];
+  const targets = [qrInput, qrReader, gpsCard, startCameraBtn, stopCameraBtn];
 
   targets.forEach((element) => {
     if (!element) {
@@ -254,8 +256,7 @@ function setValidationState(enabled, success = false) {
     }
     element.classList.toggle("scan-valid", enabled && (element === qrInput || element === qrReader));
     element.classList.toggle("scan-valid-soft", enabled && (element === gpsCard || element === startCameraBtn || element === stopCameraBtn));
-    element.classList.toggle("scan-valid-button", enabled && (element === validateQrBtn));
-    element.classList.toggle("scan-success", success && (element === qrInput || element === qrReader || element === gpsCard || element === validateQrBtn));
+    element.classList.toggle("scan-success", success && (element === qrInput || element === qrReader || element === gpsCard));
   });
 
   if (success) {
