@@ -66,7 +66,7 @@ function renderSupervisorTable(rows) {
   supervisorTableBody.innerHTML = "";
 
   if (!rows.length) {
-    supervisorTableBody.innerHTML = '<tr><td colspan="5" class="text-muted">Sin datos</td></tr>';
+    supervisorTableBody.innerHTML = '<tr><td colspan="4" class="text-muted">Sin datos</td></tr>';
     return;
   }
 
@@ -77,7 +77,6 @@ function renderSupervisorTable(rows) {
       <td>${row.day?.supervisionesFinalizadas ?? "-"}</td>
       <td>${row.week?.supervisionesFinalizadas ?? "-"}</td>
       <td>${row.month?.supervisionesFinalizadas ?? "-"}</td>
-      <td>${row.month?.hallazgosTotales ?? "-"}</td>
     `;
     supervisorTableBody.appendChild(tr);
   });
