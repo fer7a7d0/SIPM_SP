@@ -647,6 +647,7 @@ function listSupervisionsWithFilters(filters) {
   var dateFilter = String((filters && filters.fecha) || "").trim();
   var supervisorFilter = String((filters && filters.supervisorId) || "").trim().toUpperCase();
   var areaFilter = String((filters && filters.areaId) || "").trim().toUpperCase();
+  var operatorFilter = String((filters && filters.operatorId) || "").trim().toUpperCase();
 
   for (var i = 0; i < rows.length; i += 1) {
     var row = rows[i];
@@ -676,6 +677,10 @@ function listSupervisionsWithFilters(filters) {
     }
 
     if (areaFilter && String(item.areaId || "").toUpperCase() !== areaFilter) {
+      continue;
+    }
+
+    if (operatorFilter && String(item.operatorId || "").toUpperCase() !== operatorFilter) {
       continue;
     }
 

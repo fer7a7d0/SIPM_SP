@@ -9,6 +9,11 @@
   gap: 10px;
 }
 
+.history-actions {
+  display: grid;
+  gap: 10px;
+}
+
 .history-list {
   display: grid;
   gap: 10px;
@@ -137,7 +142,11 @@ body.modal-open {
 
 @media (min-width: 768px) {
   .filters-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .history-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

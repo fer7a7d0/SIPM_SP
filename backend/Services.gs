@@ -806,7 +806,8 @@ function historySearchService(payload) {
     filtersApplied: {
       fecha: String(filters.fecha || ""),
       supervisorId: String(filters.supervisorId || ""),
-      areaId: String(filters.areaId || "")
+      areaId: String(filters.areaId || ""),
+      operatorId: String(filters.operatorId || "")
     },
     catalog: catalogData.catalog,
     permissions: catalogData.permissions,
@@ -833,10 +834,38 @@ function buildHistoryCatalog(session, usersMapArg, areasMapArg) {
     return { id: key, name: areasMap[key].area };
   });
 
+  var supervisionItems = listSupervisionsWithFilters({});
+  if (isSupervisor) {
+    supervisionItems = supervisionItems.filter(function (item) {
+      return String(item.supervisorId || "").toUpperCase() === String((session && session.userId) || "").toUpperCase();
+    });
+  }
+
+  var operatorsMap = {};
+  for (var i = 0; i < supervisionItems.length; i += 1) {
+    var item = supervisionItems[i];
+    var operatorId = String(item.operatorId || "").trim();
+    if (!operatorId || operatorsMap[operatorId]) {
+      continue;
+    }
+
+    operatorsMap[operatorId] = {
+      id: operatorId,
+      name: String(item.operatorName || "").trim() || operatorId
+    };
+  }
+
+  var operatorOptions = Object.keys(operatorsMap).map(function (key) {
+    return operatorsMap[key];
+  }).sort(function (a, b) {
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
+
   return {
     catalog: {
       supervisors: supervisorOptions,
-      areas: areaOptions
+      areas: areaOptions,
+      operators: operatorOptions
     },
     permissions: {
       onlyOwnHistory: isSupervisor

@@ -6,7 +6,9 @@ import { getHistoryCatalog, getHistoryDetail, searchHistory } from "../services/
 const filterDate = document.getElementById("filterDate");
 const filterSupervisor = document.getElementById("filterSupervisor");
 const filterArea = document.getElementById("filterArea");
+const filterOperator = document.getElementById("filterOperator");
 const searchBtn = document.getElementById("searchBtn");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
 const historyList = document.getElementById("historyList");
 const historyMessage = document.getElementById("historyMessage");
 const detailModal = document.getElementById("detailModal") || document.getElementById("detailPanel");
@@ -23,6 +25,7 @@ let session = null;
 let currentDetailSupervisionId = "";
 let currentPhotoOriginalUrl = "";
 let currentPhotoFallbackUrl = "";
+let lastSearchItems = [];
 
 init();
 
@@ -36,9 +39,11 @@ async function init() {
   session = localSession;
 
   searchBtn.addEventListener("click", onSearch);
+  exportCsvBtn.addEventListener("click", onExportCsv);
   filterDate.addEventListener("change", () => saveCurrentState());
   filterSupervisor.addEventListener("change", () => saveCurrentState());
   filterArea.addEventListener("change", () => saveCurrentState());
+  filterOperator.addEventListener("change", () => saveCurrentState());
 
   if (closeDetailBtn) {
     closeDetailBtn.addEventListener("click", closeDetailModal);
@@ -91,15 +96,17 @@ async function onSearch() {
       filters: {
         fecha: filterDate.value,
         supervisorId: filterSupervisor.value,
-        areaId: filterArea.value
+        areaId: filterArea.value,
+        operatorId: filterOperator.value
       }
     });
 
+    lastSearchItems = data.items || [];
     renderCatalogs(data.catalog || {}, data.permissions || {});
-    renderList(data.items || []);
+    renderList(lastSearchItems);
     saveCurrentState({ hasSearch: true });
 
-    if ((data.items || []).length === 0) {
+    if (lastSearchItems.length === 0) {
       setMessage("No hay resultados con los filtros seleccionados.", "");
     } else {
       setMessage("", "");
@@ -112,10 +119,12 @@ async function onSearch() {
 function renderCatalogs(catalog, permissions) {
   const supervisors = catalog.supervisors || [];
   const areas = catalog.areas || [];
+  const operators = catalog.operators || [];
   const onlyOwnHistory = Boolean(permissions && permissions.onlyOwnHistory);
 
   const currentSupervisor = filterSupervisor.value;
   const currentArea = filterArea.value;
+  const currentOperator = filterOperator.value;
 
   filterSupervisor.innerHTML = onlyOwnHistory ? "" : '<option value="">Todos</option>';
   supervisors.forEach((item) => {
@@ -133,6 +142,14 @@ function renderCatalogs(catalog, permissions) {
     filterArea.appendChild(option);
   });
 
+  filterOperator.innerHTML = '<option value="">Todos</option>';
+  operators.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = item.name;
+    filterOperator.appendChild(option);
+  });
+
   if (onlyOwnHistory) {
     filterSupervisor.disabled = true;
     if (supervisors[0]) {
@@ -147,6 +164,53 @@ function renderCatalogs(catalog, permissions) {
   if (currentArea) {
     filterArea.value = currentArea;
   }
+  if (currentOperator) {
+    filterOperator.value = currentOperator;
+  }
+}
+
+function onExportCsv() {
+  if (!lastSearchItems.length) {
+    setMessage("No hay resultados para exportar. Ejecuta una busqueda primero.", "error");
+    return;
+  }
+
+  const rows = [
+    ["ID", "Fecha", "Hora inicio", "Hora fin", "Duracion", "Area", "Supervisor", "Operador", "GPS"],
+    ...lastSearchItems.map((item) => [
+      item.id || "",
+      item.fecha || "",
+      item.horaInicio || "",
+      item.horaFin || "",
+      item.duracion || "",
+      item.areaName || item.areaId || "",
+      item.supervisorName || item.supervisorId || "",
+      item.operatorName || item.operatorId || "",
+      item.gps || ""
+    ])
+  ];
+
+  const csvContent = rows.map((row) => row.map(escapeCsvCell).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+  const fileDate = String(filterDate.value || "").trim() || new Date().toISOString().slice(0, 10);
+  const fileName = `historial_supervisiones_${fileDate}.csv`;
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+
+  setMessage("CSV exportado correctamente.", "success");
+}
+
+function escapeCsvCell(value) {
+  const raw = String(value === null || value === undefined ? "" : value);
+  const escaped = raw.replace(/"/g, '""');
+  return `"${escaped}"`;
 }
 
 function renderList(items) {
@@ -403,7 +467,8 @@ function saveCurrentState(patch = {}) {
       filters: {
         fecha: filterDate.value || "",
         supervisorId: filterSupervisor.value || "",
-        areaId: filterArea.value || ""
+        areaId: filterArea.value || "",
+        operatorId: filterOperator.value || ""
       },
       scrollY: window.scrollY || 0,
       detailSupervisionId: currentDetailSupervisionId || "",
@@ -424,6 +489,9 @@ async function restoreViewState() {
   }
   if (filters.areaId) {
     filterArea.value = String(filters.areaId || "");
+  }
+  if (filters.operatorId) {
+    filterOperator.value = String(filters.operatorId || "");
   }
 
   await onSearch();

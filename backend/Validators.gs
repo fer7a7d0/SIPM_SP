@@ -99,6 +99,11 @@ function validateHistoryCatalogPayload(payload) {
 
 function validateHistorySearchPayload(payload) {
   validateTokenPayload(payload);
+
+  var filters = (payload && payload.filters) || {};
+  if (filters && filters.operatorId !== undefined && filters.operatorId !== null) {
+    filters.operatorId = String(filters.operatorId || "").trim();
+  }
 }
 
 function validateHistoryDetailPayload(payload) {
