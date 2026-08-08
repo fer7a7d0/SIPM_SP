@@ -28,6 +28,11 @@ function areaListController(payload) {
   return areaListService(payload);
 }
 
+function operatorsListByAreaController(payload) {
+  validateOperatorsListByAreaPayload(payload);
+  return operatorsListByAreaService(payload);
+}
+
 function qrValidateController(payload) {
   validateQrPayload(payload);
   validateTokenPayload(payload);

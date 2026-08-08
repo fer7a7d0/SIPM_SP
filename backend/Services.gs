@@ -471,6 +471,33 @@ function areaListService(payload) {
   };
 }
 
+function operatorsListByAreaService(payload) {
+  decodeAndVerifyToken(payload.token);
+
+  var areaId = String((payload && payload.areaId) || "").trim();
+  var area = findAreaById(areaId);
+  if (!area) {
+    throw buildError("Area no valida para listar operadores", "AREA_NOT_FOUND");
+  }
+
+  var includeInactive = Boolean(payload && payload.includeInactive);
+  var operators = listOperatorsByArea(area.id, includeInactive);
+
+  return {
+    area: {
+      id: area.id,
+      name: area.nombre
+    },
+    operators: operators.map(function (item) {
+      return {
+        id: item.id,
+        name: item.nombre,
+        active: Boolean(item.activo)
+      };
+    })
+  };
+}
+
 function qrValidateService(payload) {
   decodeAndVerifyToken(payload.token);
 

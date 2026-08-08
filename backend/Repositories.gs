@@ -93,6 +93,55 @@ function listAreasOrdered() {
   return areas;
 }
 
+function listOperatorsByArea(areaId, includeInactive) {
+  var area = findAreaById(areaId);
+  if (!area) {
+    return [];
+  }
+
+  var rows = getDataRows(SHEET_NAMES.operadores);
+  var results = [];
+  var targetAreaId = String(area.id || "").trim().toUpperCase();
+  var targetAreaName = String(area.nombre || "").trim().toUpperCase();
+  var allowInactive = Boolean(includeInactive);
+
+  for (var i = 0; i < rows.length; i += 1) {
+    var row = rows[i];
+    var id = String(row[0] || "").trim();
+    var name = String(row[1] || "").trim();
+    var areaRef = String(row[2] || "").trim();
+    var isActive = row[3] === "" ? true : parseSheetBoolean(row[3]);
+
+    if (!id || !name) {
+      continue;
+    }
+
+    var areaRefKey = areaRef.toUpperCase();
+    var belongsToArea = areaRefKey === targetAreaId || areaRefKey === targetAreaName;
+    if (!belongsToArea) {
+      continue;
+    }
+
+    if (!allowInactive && !isActive) {
+      continue;
+    }
+
+    results.push({
+      id: id,
+      nombre: name,
+      areaId: area.id,
+      areaNombre: area.nombre,
+      activo: isActive
+    });
+  }
+
+  results.sort(function (a, b) {
+    return String(a.nombre || "").localeCompare(String(b.nombre || ""));
+  });
+
+  return results;
+}
+
 function appendSupervisionRow(record) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.supervisiones);
   if (!sheet) {

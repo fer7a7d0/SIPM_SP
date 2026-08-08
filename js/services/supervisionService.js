@@ -13,6 +13,11 @@ export async function listAvailableAreas(token) {
   return data.areas || [];
 }
 
+export async function listOperatorsByArea(payload) {
+  const data = await apiRequest("operators.listByArea", payload);
+  return data;
+}
+
 export async function getChecklist(payload) {
   const data = await apiRequest("supervision.getChecklist", payload);
   return data;

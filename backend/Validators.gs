@@ -25,6 +25,15 @@ function validateAreaListPayload(payload) {
   validateTokenPayload(payload);
 }
 
+function validateOperatorsListByAreaPayload(payload) {
+  validateTokenPayload(payload);
+
+  var areaId = String((payload && payload.areaId) || "").trim();
+  if (!areaId) {
+    throw buildError("Area requerida para listar operadores", "BAD_REQUEST");
+  }
+}
+
 function validateQrPayload(payload) {
   var qrCode = String((payload && payload.qrCode) || "").trim();
   if (!qrCode) {
