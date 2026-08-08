@@ -16,26 +16,30 @@
   overflow: hidden;
   background: #f7faf9;
   position: relative;
+  isolation: isolate;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .scanner-processing-overlay {
   position: absolute;
   inset: 0;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(7, 20, 18, 0.62);
+  background: rgba(7, 20, 18, 0.72);
   color: #f7fbfa;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 2;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 2147483647;
 }
 
 .scanner-processing-overlay.is-visible {
+  display: flex;
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 

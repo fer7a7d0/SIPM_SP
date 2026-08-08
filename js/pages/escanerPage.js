@@ -285,6 +285,9 @@ function setProcessingOverlayVisible(visible, title = "Procesando escaneo", subt
   }
 
   scannerProcessingOverlay.classList.toggle("is-visible", visible);
+  scannerProcessingOverlay.style.display = visible ? "flex" : "none";
+  scannerProcessingOverlay.style.visibility = visible ? "visible" : "hidden";
+  scannerProcessingOverlay.style.opacity = visible ? "1" : "0";
   scannerProcessingTitle.textContent = title;
   scannerProcessingSubtitle.textContent = subtitle;
 }
