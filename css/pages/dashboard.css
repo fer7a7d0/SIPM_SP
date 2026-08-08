@@ -318,6 +318,11 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  #kpiFinalizadasCards,
+  #kpiHallazgosCards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .kpi-card {
     padding: 10px;
   }
@@ -352,6 +357,22 @@
   .kpi-block {
     padding: 12px;
     border-radius: 10px;
+  }
+
+  #kpiFinalizadasCards .kpi-card,
+  #kpiHallazgosCards .kpi-card {
+    padding: 8px 6px;
+  }
+
+  #kpiFinalizadasCards .title-md,
+  #kpiHallazgosCards .title-md {
+    font-size: 1.1rem;
+  }
+
+  #kpiFinalizadasCards .kpi-period,
+  #kpiHallazgosCards .kpi-period {
+    font-size: 0.64rem;
+    padding: 1px 6px;
   }
 
   .title-sm {
