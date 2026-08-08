@@ -159,10 +159,6 @@ function createQuestionCard(question) {
   const wrapper = document.createElement("article");
   wrapper.className = "question-card";
 
-  const category = document.createElement("span");
-  category.className = "question-category";
-  category.textContent = question.category || "General";
-
   const title = document.createElement("p");
   title.className = "question-title";
   title.textContent = `${questionIndex + 1}. ${question.question}`;
@@ -247,7 +243,6 @@ function createQuestionCard(question) {
     }
   });
 
-  wrapper.appendChild(category);
   wrapper.appendChild(title);
   if (requiresWrap.childElementCount > 0) {
     wrapper.appendChild(requiresWrap);

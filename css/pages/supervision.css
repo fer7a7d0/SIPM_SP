@@ -63,18 +63,6 @@
   margin-bottom: 8px;
 }
 
-.question-category {
-  display: inline-block;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #0a6f56;
-  background: #e6f4ef;
-  border-radius: 999px;
-  padding: 2px 8px;
-  margin-bottom: 6px;
-}
-
 .required-chip {
   display: inline-block;
   font-size: 0.7rem;
@@ -140,11 +128,6 @@
   #startTime,
   #gpsText {
     color: #e7f2ef;
-  }
-
-  .question-category {
-    color: #98e4c8;
-    background: #12372f;
   }
 
   .required-chip {
