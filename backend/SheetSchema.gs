@@ -20,9 +20,11 @@ var SHEET_HEADERS = {
   Secciones: ["ID", "ID Checklist", "Nombre", "Orden"],
   ChecklistPreguntas: ["ID Checklist", "ID Seccion", "ID Pregunta", "Orden", "Obligatoria"],
   AreaChecklist: ["ID Area", "ID Checklist", "Orden", "Activo"],
-  Supervisiones: ["ID", "Fecha", "Hora inicio", "Hora fin", "Duracion", "Supervisor", "Area", "GPS", "Operador ID", "Operador Nombre"],
+  Supervisiones: ["ID", "Fecha", "Hora inicio", "Hora fin", "Duracion", "Supervisor", "Operador ID", "Operador Nombre", "Area", "GPS"],
   Respuestas: [
     "ID Supervision",
+    "Operador ID",
+    "Operador Nombre",
     "ID Area",
     "Area",
     "ID Checklist",
@@ -38,9 +40,7 @@ var SHEET_HEADERS = {
     "Obligatoria",
     "Respuesta",
     "Comentario",
-    "URL Fotografia",
-    "Operador ID",
-    "Operador Nombre"
+    "URL Fotografia"
   ]
 };
 
