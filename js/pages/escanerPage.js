@@ -145,21 +145,20 @@ async function onValidateAndStart(qrCode) {
     isSubmitting = true;
     lastProcessedQr = qrCode;
     setValidationState(true);
-    setFlowState("validating", "Validando area...");
-    setMessage("Validando area...", "");
+    setFlowState("validating", "Validando área...");
+    setMessage("Validando área...", "");
 
     const area = await validateQrCode(activeSession.token, qrCode);
 
     qrInput.value = qrCode;
     setValidationState(true, true);
-    setFlowState("launching", "Cargando supervisión...");
-    setMessage("¡Área validada!", "success");
+    setFlowState("launching", "Iniciando supervisión...");
+    setMessage("Iniciando supervisión...", "success");
 
     await new Promise((resolve) => {
       window.setTimeout(resolve, 700);
     });
 
-    setMessage("Iniciando supervision...", "");
     await launchSupervision({ areaId: area.area.id, qrCode });
 
     await stopCamera();
