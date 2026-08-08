@@ -107,7 +107,9 @@ function appendSupervisionRow(record) {
     record.duracion,
     record.supervisor,
     record.area,
-    record.gps
+    record.gps,
+    record.operatorId || "",
+    record.operatorName || ""
   ]);
 }
 
@@ -127,7 +129,9 @@ function findSupervisionById(supervisionId) {
         duracion: String(row[4] || "").trim(),
         supervisor: String(row[5] || "").trim(),
         area: String(row[6] || "").trim(),
-        gps: String(row[7] || "").trim()
+        gps: String(row[7] || "").trim(),
+        operatorId: String(row[8] || "").trim(),
+        operatorName: String(row[9] || "").trim()
       };
     }
   }
@@ -173,7 +177,9 @@ function appendAnswerRow(record) {
     record.obligatory,
     record.response,
     record.comment,
-    record.photoUrl
+    record.photoUrl,
+    record.operatorId || "",
+    record.operatorName || ""
   ]);
 }
 
@@ -586,7 +592,9 @@ function listSupervisionsWithFilters(filters) {
       duracion: String(row[4] || "").trim(),
       supervisorId: String(row[5] || "").trim(),
       areaId: String(row[6] || "").trim(),
-      gps: String(row[7] || "").trim()
+      gps: String(row[7] || "").trim(),
+      operatorId: String(row[8] || "").trim(),
+      operatorName: String(row[9] || "").trim()
     };
 
     if (!isSupervisionCompleted(item)) {
@@ -673,7 +681,9 @@ function normalizeAnswerRow(row) {
       obligatory: true,
       response: String(row[2] || "").trim(),
       comment: String(row[3] || "").trim(),
-      photoUrl: String(row[4] || "").trim()
+      photoUrl: String(row[4] || "").trim(),
+      operatorId: "",
+      operatorName: ""
     };
   }
 
@@ -694,7 +704,9 @@ function normalizeAnswerRow(row) {
     obligatory: row[13] === "" ? true : parseSheetBoolean(row[13]),
     response: String(row[14] || "").trim(),
     comment: String(row[15] || "").trim(),
-    photoUrl: String(row[16] || "").trim()
+    photoUrl: String(row[16] || "").trim(),
+    operatorId: String(row[17] || "").trim(),
+    operatorName: String(row[18] || "").trim()
   };
 }
 

@@ -1,5 +1,6 @@
 var SHEET_NAMES = {
   usuarios: "Usuarios",
+  operadores: "Operadores",
   areas: "Areas",
   preguntas: "Preguntas",
   checklists: "Checklists",
@@ -12,13 +13,14 @@ var SHEET_NAMES = {
 
 var SHEET_HEADERS = {
   Usuarios: ["ID", "Nombre", "Rol"],
+  Operadores: ["ID", "Nombre", "Area", "Activo"],
   Areas: ["ID", "Area", "Codigo QR"],
   Preguntas: ["ID", "Categoria", "Pregunta", "Orden", "Obliga comentario", "Obliga fotografia"],
   Checklists: ["ID", "Nombre", "Descripcion", "Activo"],
   Secciones: ["ID", "ID Checklist", "Nombre", "Orden"],
   ChecklistPreguntas: ["ID Checklist", "ID Seccion", "ID Pregunta", "Orden", "Obligatoria"],
   AreaChecklist: ["ID Area", "ID Checklist", "Orden", "Activo"],
-  Supervisiones: ["ID", "Fecha", "Hora inicio", "Hora fin", "Duracion", "Supervisor", "Area", "GPS"],
+  Supervisiones: ["ID", "Fecha", "Hora inicio", "Hora fin", "Duracion", "Supervisor", "Area", "GPS", "Operador ID", "Operador Nombre"],
   Respuestas: [
     "ID Supervision",
     "ID Area",
@@ -36,7 +38,9 @@ var SHEET_HEADERS = {
     "Obligatoria",
     "Respuesta",
     "Comentario",
-    "URL Fotografia"
+    "URL Fotografia",
+    "Operador ID",
+    "Operador Nombre"
   ]
 };
 
