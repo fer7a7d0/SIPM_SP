@@ -6,7 +6,6 @@ import { startSupervision } from "../services/supervisionService.js";
 import { formatGps, getCurrentPosition } from "../utils/geo.js";
 
 const qrInput = document.getElementById("qrInput");
-const validateQrBtn = document.getElementById("validateQrBtn");
 const gpsStatus = document.getElementById("gpsStatus");
 const scannerMessage = document.getElementById("scannerMessage");
 const startCameraBtn = document.getElementById("startCameraBtn");
@@ -40,12 +39,8 @@ async function init() {
 
   setupQrMode();
   setQrControlsEnabled(false);
-  updateValidateButtonState();
   setFlowState("waiting-gps", "Esperando ubicacion GPS...");
 
-  validateQrBtn.addEventListener("click", () => {
-    processQrCode(String(qrInput.value || ""));
-  });
   startCameraBtn.addEventListener("click", startCamera);
   stopCameraBtn.addEventListener("click", stopCamera);
   qrInput.addEventListener("input", () => {
@@ -101,13 +96,11 @@ async function captureGps() {
     gpsPosition = await getCurrentPosition();
     gpsStatus.textContent = `GPS activo: ${formatGps(gpsPosition)} (±${Math.round(gpsPosition.accuracy)}m)`;
     setQrControlsEnabled(true);
-    updateValidateButtonState();
     setFlowState("ready", "GPS listo. Puedes iniciar la camara o ingresar el QR manualmente.");
   } catch (error) {
     gpsPosition = null;
     setQrControlsEnabled(false);
     gpsStatus.textContent = "No disponible";
-    updateValidateButtonState();
     setFlowState("error", error.message || "No fue posible obtener GPS.");
     setMessage(error.message, "error");
   }
@@ -149,7 +142,6 @@ async function onValidateAndStart(qrCode) {
   try {
     isSubmitting = true;
     lastProcessedQr = qrCode;
-    validateQrBtn.disabled = true;
     setValidationState(true);
     setFlowState("validating", "Validando area...");
     setMessage("Validando area...", "");
@@ -157,7 +149,6 @@ async function onValidateAndStart(qrCode) {
     const area = await validateQrCode(activeSession.token, qrCode);
 
     qrInput.value = qrCode;
-    updateValidateButtonState();
     setValidationState(true, true);
     setFlowState("launching", "Cargando supervisión...");
     setMessage("¡Área validada!", "success");
@@ -178,7 +169,6 @@ async function onValidateAndStart(qrCode) {
     setMessage(error.message || "No se pudo iniciar supervision.", "error");
   } finally {
     isSubmitting = false;
-    updateValidateButtonState();
   }
 }
 
@@ -278,11 +268,6 @@ function setValidationState(enabled, success = false) {
       successAnimationTimer = null;
     }, 700);
   }
-}
-
-function updateValidateButtonState() {
-  const hasValue = String(qrInput.value || "").trim().length > 0;
-  validateQrBtn.disabled = !hasValue || !gpsPosition || isSubmitting;
 }
 
 function setFlowState(state, message) {
