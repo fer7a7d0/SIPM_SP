@@ -143,6 +143,15 @@
   color: #7a4a1f;
 }
 
+#operatorRankingKpiBlock {
+  border-color: #c68b7f;
+  background: linear-gradient(180deg, #fff0ec 0%, #fff8f5 100%);
+}
+
+#operatorRankingKpiBlock .title-sm {
+  color: #874135;
+}
+
 #timeKpiBlock {
   border-color: #7db8bc;
   background: linear-gradient(180deg, #eaf9fa 0%, #f4feff 100%);
@@ -261,6 +270,15 @@
 
   #rankingKpiBlock .title-sm {
     color: #e5c59f;
+  }
+
+  #operatorRankingKpiBlock {
+    border-color: #7b564d;
+    background: linear-gradient(180deg, #34221e 0%, #2c211f 100%);
+  }
+
+  #operatorRankingKpiBlock .title-sm {
+    color: #efb7ab;
   }
 
   #timeKpiBlock {

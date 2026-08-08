@@ -17,6 +17,7 @@ const supervisorTableBody = document.querySelector("#supervisorTable tbody");
 const operatorTableBody = document.querySelector("#operatorTable tbody");
 const trendTableBody = document.querySelector("#trendTable tbody");
 const areaTableBody = document.querySelector("#areaTable tbody");
+const operatorRankingTableBody = document.querySelector("#operatorRankingTable tbody");
 const timeGlobal = document.getElementById("timeGlobal");
 const timeBySupervisorTableBody = document.querySelector("#timeBySupervisorTable tbody");
 
@@ -61,7 +62,27 @@ function renderSummary(summary) {
   renderOperatorTable(summary.byOperator || []);
   renderTrendTable(summary.findingsTrend || []);
   renderAreaTable(summary.areaRanking || []);
+  renderOperatorRankingTable(summary.operatorRanking || []);
   renderTimeMetrics(summary.timeMetrics || {});
+}
+
+function renderOperatorRankingTable(rows) {
+  operatorRankingTableBody.innerHTML = "";
+
+  if (!rows.length) {
+    operatorRankingTableBody.innerHTML = '<tr><td colspan="3" class="text-muted">Sin datos</td></tr>';
+    return;
+  }
+
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.operatorName || row.operatorId || "-"}</td>
+      <td>${row.hallazgosTotales ?? "-"}</td>
+      <td>${row.supervisionesFinalizadas ?? "-"}</td>
+    `;
+    operatorRankingTableBody.appendChild(tr);
+  });
 }
 
 function renderOperatorTable(rows) {
@@ -73,7 +94,6 @@ function renderOperatorTable(rows) {
   }
 
   rows.forEach((row) => {
-    const areas = Array.isArray(row.areas) ? row.areas.join(", ") : "-";
     const compliance = row.cumplimientoPct === null || row.cumplimientoPct === undefined
       ? "-"
       : `${row.cumplimientoPct}%`;
@@ -81,8 +101,8 @@ function renderOperatorTable(rows) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row.operatorName || row.operatorId || "-"}</td>
-      <td>${areas || "-"}</td>
       <td>${row.supervisionesFinalizadas ?? "-"}</td>
+      <td>${row.preguntasEvaluables ?? "-"}</td>
       <td>${row.hallazgosTotales ?? "-"}</td>
       <td>${compliance}</td>
     `;

@@ -120,6 +120,7 @@ function dashboardKpiSummaryService(payload) {
     },
     bySupervisor: buildSupervisorMetrics(enriched),
     byOperator: buildOperatorMetrics(monthSlice),
+    operatorRanking: buildOperatorRanking(monthSlice),
     findingsTrend: buildFindingsTrend(enriched, weekStartKey, todayKey),
     areaRanking: buildAreaRanking(monthSlice),
     timeMetrics: buildTimeMetrics(monthSlice)
@@ -351,6 +352,7 @@ function buildOperatorMetrics(items) {
       operatorName: row.operatorName,
       areas: areaNames,
       supervisionesFinalizadas: row.supervisiones,
+      preguntasEvaluables: row.evaluables,
       hallazgosTotales: row.hallazgos,
       cumplimientoPct: toPercent(row.cumple, row.evaluables)
     };
@@ -364,6 +366,31 @@ function buildOperatorMetrics(items) {
   });
 
   return rows;
+}
+
+function buildOperatorRanking(items) {
+  var rows = buildOperatorMetrics(items).map(function (item) {
+    return {
+      operatorId: item.operatorId,
+      operatorName: item.operatorName,
+      hallazgosTotales: item.hallazgosTotales,
+      supervisionesFinalizadas: item.supervisionesFinalizadas
+    };
+  });
+
+  rows.sort(function (a, b) {
+    if (Number(b.hallazgosTotales || 0) !== Number(a.hallazgosTotales || 0)) {
+      return Number(b.hallazgosTotales || 0) - Number(a.hallazgosTotales || 0);
+    }
+
+    if (Number(b.supervisionesFinalizadas || 0) !== Number(a.supervisionesFinalizadas || 0)) {
+      return Number(b.supervisionesFinalizadas || 0) - Number(a.supervisionesFinalizadas || 0);
+    }
+
+    return String(a.operatorName || "").localeCompare(String(b.operatorName || ""));
+  });
+
+  return rows.slice(0, 10);
 }
 
 function calculateMonthlySupervisionTargetToDate(now) {
