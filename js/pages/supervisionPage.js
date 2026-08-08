@@ -24,6 +24,7 @@ let activeSupervision = null;
 let checklistQuestions = [];
 let checklistGroups = [];
 let operatorsCatalog = [];
+let isDataReady = false;
 const answerState = {};
 
 init();
@@ -41,6 +42,7 @@ async function init() {
   startTimeEl.textContent = `Hora inicio: ${formatTimeEs(activeSupervision.startAt)}`;
   gpsTextEl.textContent = `GPS: ${activeSupervision.gps}`;
 
+  continueChecklistBtn.disabled = true;
   continueChecklistBtn.addEventListener("click", onContinue);
   operatorSelectEl.addEventListener("change", onOperatorChange);
 
@@ -75,6 +77,8 @@ async function init() {
     seedAnswerState(checklistQuestions, activeSupervision.answers || {});
     renderChecklist();
     recalculateCounters();
+    isDataReady = Boolean(operatorsCatalog.length > 0 && checklistQuestions.length > 0);
+    updateContinueButtonState();
     setMessage("", "");
   } catch (error) {
     setMessage(error.message || "No se pudo cargar el checklist.", "error");
@@ -110,10 +114,13 @@ function renderOperatorOptions(selectedId) {
   if (operatorSelectEl.value) {
     persistOperatorSelection(operatorSelectEl.value);
   }
+
+  updateContinueButtonState();
 }
 
 function onOperatorChange() {
   persistOperatorSelection(operatorSelectEl.value);
+  updateContinueButtonState();
 }
 
 function persistOperatorSelection(operatorId) {
@@ -125,6 +132,12 @@ function persistOperatorSelection(operatorId) {
   });
 
   activeSupervision = getActiveSupervision() || activeSupervision;
+}
+
+function updateContinueButtonState() {
+  const hasOperator = Boolean(String(operatorSelectEl.value || "").trim());
+  const hasChecklist = checklistQuestions.length > 0;
+  continueChecklistBtn.disabled = !(isDataReady && hasOperator && hasChecklist);
 }
 
 function seedAnswerState(questions, existing) {
@@ -152,8 +165,13 @@ function renderChecklist() {
 
   if (checklistQuestions.length === 0) {
     checklistContainer.innerHTML = '<p class="text-muted mb-0">No hay preguntas configuradas.</p>';
+    isDataReady = false;
+    updateContinueButtonState();
     return;
   }
+
+  isDataReady = Boolean(operatorsCatalog.length > 0 && checklistQuestions.length > 0);
+  updateContinueButtonState();
 
   const groups = checklistGroups.length > 0 ? checklistGroups : [
     {
