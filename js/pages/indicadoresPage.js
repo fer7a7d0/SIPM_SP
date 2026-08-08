@@ -103,7 +103,7 @@ function renderTrendTable(rows) {
   trendTableBody.innerHTML = "";
 
   if (!rows.length) {
-    trendTableBody.innerHTML = '<tr><td colspan="3" class="text-muted">Sin datos</td></tr>';
+    trendTableBody.innerHTML = '<tr><td colspan="2" class="text-muted">Sin datos</td></tr>';
     return;
   }
 
@@ -112,7 +112,6 @@ function renderTrendTable(rows) {
     tr.innerHTML = `
       <td>${row.date || "-"}</td>
       <td>${row.hallazgos ?? "-"}</td>
-      <td>${row.supervisiones ?? "-"}</td>
     `;
     trendTableBody.appendChild(tr);
   });
