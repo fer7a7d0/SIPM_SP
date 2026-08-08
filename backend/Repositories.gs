@@ -172,10 +172,10 @@ function appendSupervisionRow(record) {
     record.horaFin,
     record.duracion,
     record.supervisor,
-    record.area,
-    record.gps,
     record.operatorId || "",
-    record.operatorName || ""
+    record.operatorName || "",
+    record.area,
+    record.gps
   ]);
 }
 
@@ -187,6 +187,23 @@ function findSupervisionById(supervisionId) {
     var row = rows[i];
     var id = String(row[0] || "").trim();
     if (id === target) {
+      var operatorId = String(row[6] || "").trim();
+      if (!operatorId) {
+        operatorId = String(row[8] || "").trim();
+      }
+      var operatorName = String(row[7] || "").trim();
+      if (!operatorName) {
+        operatorName = String(row[9] || "").trim();
+      }
+      var area = String(row[8] || "").trim();
+      if (!area) {
+        area = String(row[6] || "").trim();
+      }
+      var gps = String(row[9] || "").trim();
+      if (!gps) {
+        gps = String(row[7] || "").trim();
+      }
+
       return {
         id: id,
         fecha: normalizeSheetDateToKey(row[1]),
@@ -194,10 +211,10 @@ function findSupervisionById(supervisionId) {
         horaFin: String(row[3] || "").trim(),
         duracion: String(row[4] || "").trim(),
         supervisor: String(row[5] || "").trim(),
-        area: String(row[6] || "").trim(),
-        gps: String(row[7] || "").trim(),
-        operatorId: String(row[8] || "").trim(),
-        operatorName: String(row[9] || "").trim()
+        area: area,
+        gps: gps,
+        operatorId: operatorId,
+        operatorName: operatorName
       };
     }
   }
@@ -228,6 +245,8 @@ function appendAnswerRow(record) {
 
   sheet.appendRow([
     record.supervisionId,
+    record.operatorId || "",
+    record.operatorName || "",
     record.areaId,
     record.areaName,
     record.checklistId,
@@ -243,9 +262,7 @@ function appendAnswerRow(record) {
     record.obligatory,
     record.response,
     record.comment,
-    record.photoUrl,
-    record.operatorId || "",
-    record.operatorName || ""
+    record.photoUrl
   ]);
 }
 
@@ -651,6 +668,23 @@ function listSupervisionsWithFilters(filters) {
 
   for (var i = 0; i < rows.length; i += 1) {
     var row = rows[i];
+    var operatorId = String(row[6] || "").trim();
+    if (!operatorId) {
+      operatorId = String(row[8] || "").trim();
+    }
+    var operatorName = String(row[7] || "").trim();
+    if (!operatorName) {
+      operatorName = String(row[9] || "").trim();
+    }
+    var areaId = String(row[8] || "").trim();
+    if (!areaId) {
+      areaId = String(row[6] || "").trim();
+    }
+    var gps = String(row[9] || "").trim();
+    if (!gps) {
+      gps = String(row[7] || "").trim();
+    }
+
     var item = {
       id: String(row[0] || "").trim(),
       fecha: normalizeSheetDateToKey(row[1]),
@@ -658,10 +692,10 @@ function listSupervisionsWithFilters(filters) {
       horaFin: String(row[3] || "").trim(),
       duracion: String(row[4] || "").trim(),
       supervisorId: String(row[5] || "").trim(),
-      areaId: String(row[6] || "").trim(),
-      gps: String(row[7] || "").trim(),
-      operatorId: String(row[8] || "").trim(),
-      operatorName: String(row[9] || "").trim()
+      areaId: areaId,
+      gps: gps,
+      operatorId: operatorId,
+      operatorName: operatorName
     };
 
     if (!isSupervisionCompleted(item)) {
@@ -732,7 +766,7 @@ function listAllAnswers() {
 
 function normalizeAnswerRow(row) {
   var supervisionId = String(row[0] || "").trim();
-  var hasExpandedShape = String(row[7] || "").trim() || String(row[14] || "").trim() || String(row[15] || "").trim();
+  var hasExpandedShape = String(row[18] || "").trim() || String(row[17] || "").trim() || String(row[16] || "").trim() || String(row[15] || "").trim();
 
   if (!hasExpandedShape) {
     return {
@@ -760,24 +794,24 @@ function normalizeAnswerRow(row) {
 
   return {
     supervisionId: supervisionId,
-    areaId: String(row[1] || "").trim(),
-    areaName: String(row[2] || "").trim(),
-    checklistId: String(row[3] || "").trim(),
-    checklistName: String(row[4] || "").trim(),
-    sectionId: String(row[5] || "").trim(),
-    sectionName: String(row[6] || "").trim(),
-    questionId: String(row[7] || "").trim(),
-    category: String(row[8] || "").trim(),
-    questionText: String(row[9] || "").trim(),
-    checklistOrder: Number(row[10] || 0),
-    sectionOrder: Number(row[11] || 0),
-    questionOrder: Number(row[12] || 0),
-    obligatory: row[13] === "" ? true : parseSheetBoolean(row[13]),
-    response: String(row[14] || "").trim(),
-    comment: String(row[15] || "").trim(),
-    photoUrl: String(row[16] || "").trim(),
-    operatorId: String(row[17] || "").trim(),
-    operatorName: String(row[18] || "").trim()
+    areaId: String(row[3] || "").trim(),
+    areaName: String(row[4] || "").trim(),
+    checklistId: String(row[5] || "").trim(),
+    checklistName: String(row[6] || "").trim(),
+    sectionId: String(row[7] || "").trim(),
+    sectionName: String(row[8] || "").trim(),
+    questionId: String(row[9] || "").trim(),
+    category: String(row[10] || "").trim(),
+    questionText: String(row[11] || "").trim(),
+    checklistOrder: Number(row[12] || 0),
+    sectionOrder: Number(row[13] || 0),
+    questionOrder: Number(row[14] || 0),
+    obligatory: row[15] === "" ? true : parseSheetBoolean(row[15]),
+    response: String(row[16] || "").trim(),
+    comment: String(row[17] || "").trim(),
+    photoUrl: String(row[18] || "").trim(),
+    operatorId: String(row[1] || "").trim(),
+    operatorName: String(row[2] || "").trim()
   };
 }
 
