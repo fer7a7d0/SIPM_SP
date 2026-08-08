@@ -62,13 +62,14 @@ function dashboardKpiSummaryService(payload) {
   var now = new Date();
   var todayKey = Utilities.formatDate(now, tz, "yyyy-MM-dd");
   var weekStartKey = Utilities.formatDate(shiftDateDays(now, -6), tz, "yyyy-MM-dd");
-  var monthStartKey = Utilities.formatDate(shiftDateDays(now, -29), tz, "yyyy-MM-dd");
+  var monthStartKey = Utilities.formatDate(new Date(now.getFullYear(), now.getMonth(), 1), tz, "yyyy-MM-dd");
 
   var windowDays = Number((payload && payload.windowDays) || 30);
   if (!isFinite(windowDays) || windowDays < 7 || windowDays > 90) {
     windowDays = 30;
   }
   var windowStartKey = Utilities.formatDate(shiftDateDays(now, -(windowDays - 1)), tz, "yyyy-MM-dd");
+  var effectiveStartKey = compareDateKeys(windowStartKey, monthStartKey) <= 0 ? windowStartKey : monthStartKey;
 
   var usersMap = mapUsersById();
   var areasMap = mapAreasById();
@@ -82,7 +83,7 @@ function dashboardKpiSummaryService(payload) {
   }
 
   supervisions = supervisions.filter(function (item) {
-    return compareDateKeys(item.fecha, windowStartKey) >= 0 && compareDateKeys(item.fecha, todayKey) <= 0;
+    return compareDateKeys(item.fecha, effectiveStartKey) >= 0 && compareDateKeys(item.fecha, todayKey) <= 0;
   });
 
   var answersBySupervision = buildAnswerAggregatesBySupervision(listAllAnswers());
