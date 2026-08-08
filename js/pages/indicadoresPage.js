@@ -91,7 +91,7 @@ function renderOperatorTable(rows) {
   operatorTableBody.innerHTML = "";
 
   if (!rows.length) {
-    operatorTableBody.innerHTML = '<tr><td colspan="5" class="text-muted">Sin datos</td></tr>';
+    operatorTableBody.innerHTML = '<tr><td colspan="4" class="text-muted">Sin datos</td></tr>';
     return;
   }
 
@@ -103,7 +103,6 @@ function renderOperatorTable(rows) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row.operatorName || row.operatorId || "-"}</td>
-      <td>${row.supervisionesFinalizadas ?? "-"}</td>
       <td>${row.preguntasEvaluables ?? "-"}</td>
       <td>${row.hallazgosTotales ?? "-"}</td>
       <td>${compliance}</td>
