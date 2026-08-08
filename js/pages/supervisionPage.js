@@ -168,12 +168,6 @@ function createQuestionCard(question) {
   title.textContent = `${questionIndex + 1}. ${question.question}`;
 
   const requiresWrap = document.createElement("div");
-  if (question.obligatory !== false) {
-    const chip = document.createElement("span");
-    chip.className = "required-chip";
-    chip.textContent = "Respuesta obligatoria";
-    requiresWrap.appendChild(chip);
-  }
   if (question.requiresComment) {
     const chip = document.createElement("span");
     chip.className = "required-chip";
@@ -255,7 +249,9 @@ function createQuestionCard(question) {
 
   wrapper.appendChild(category);
   wrapper.appendChild(title);
-  wrapper.appendChild(requiresWrap);
+  if (requiresWrap.childElementCount > 0) {
+    wrapper.appendChild(requiresWrap);
+  }
   wrapper.appendChild(select);
   wrapper.appendChild(comment);
   wrapper.appendChild(photoButton);
