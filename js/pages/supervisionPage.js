@@ -1,7 +1,7 @@
 import "../router.js";
 import { ROUTES } from "../config.js";
 import { getSession } from "../services/authService.js";
-import { getActiveSupervision, getChecklist, updateActiveSupervision } from "../services/supervisionService.js";
+import { getActiveSupervision, getChecklist, listOperatorsByArea, updateActiveSupervision } from "../services/supervisionService.js";
 import { formatTimeEs } from "../utils/dateTime.js";
 
 const areaNameEl = document.getElementById("areaName");
@@ -13,6 +13,8 @@ const checklistContainer = document.getElementById("checklistContainer");
 const answeredCountEl = document.getElementById("answeredCount");
 const totalCountEl = document.getElementById("totalCount");
 const photoCountEl = document.getElementById("photoCount");
+const operatorSelectEl = document.getElementById("operatorSelect");
+const operatorHelpTextEl = document.getElementById("operatorHelpText");
 
 const RESPONSE_OPTIONS = ["Cumple", "No cumple", "No aplica"];
 const IMAGE_MAX_DIMENSION = 1280;
@@ -21,6 +23,7 @@ const IMAGE_JPEG_QUALITY = 0.72;
 let activeSupervision = null;
 let checklistQuestions = [];
 let checklistGroups = [];
+let operatorsCatalog = [];
 const answerState = {};
 
 init();
@@ -39,9 +42,10 @@ async function init() {
   gpsTextEl.textContent = `GPS: ${activeSupervision.gps}`;
 
   continueChecklistBtn.addEventListener("click", onContinue);
+  operatorSelectEl.addEventListener("change", onOperatorChange);
 
   try {
-    setMessage("Cargando checklist...", "");
+    setMessage("Cargando checklist y operadores...", "");
     const checklistPayload = {
       token: session.token,
       areaId: activeSupervision.areaId
@@ -50,9 +54,18 @@ async function init() {
       checklistPayload.supervisionId = activeSupervision.id;
     }
 
-    const data = await getChecklist({
-      ...checklistPayload
-    });
+    const [data, operatorsData] = await Promise.all([
+      getChecklist({
+        ...checklistPayload
+      }),
+      listOperatorsByArea({
+        token: session.token,
+        areaId: activeSupervision.areaId
+      })
+    ]);
+
+    operatorsCatalog = operatorsData.operators || [];
+    renderOperatorOptions(activeSupervision.operatorId || "");
 
     checklistGroups = data.checklists || [];
     checklistQuestions = data.questions || [];
@@ -66,6 +79,52 @@ async function init() {
   } catch (error) {
     setMessage(error.message || "No se pudo cargar el checklist.", "error");
   }
+}
+
+function renderOperatorOptions(selectedId) {
+  operatorSelectEl.innerHTML = '<option value="">Selecciona operador</option>';
+
+  operatorsCatalog.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = item.name;
+    operatorSelectEl.appendChild(option);
+  });
+
+  if (selectedId) {
+    const exists = operatorsCatalog.some((item) => item.id === selectedId);
+    operatorSelectEl.value = exists ? selectedId : "";
+  } else {
+    operatorSelectEl.value = "";
+  }
+
+  const hasOperators = operatorsCatalog.length > 0;
+  operatorSelectEl.disabled = !hasOperators;
+
+  if (!hasOperators) {
+    operatorHelpTextEl.textContent = "No hay operadores activos configurados para esta area.";
+  } else {
+    operatorHelpTextEl.textContent = "Selecciona el operador responsable para esta supervision.";
+  }
+
+  if (operatorSelectEl.value) {
+    persistOperatorSelection(operatorSelectEl.value);
+  }
+}
+
+function onOperatorChange() {
+  persistOperatorSelection(operatorSelectEl.value);
+}
+
+function persistOperatorSelection(operatorId) {
+  var selected = operatorsCatalog.find((item) => item.id === operatorId) || null;
+
+  updateActiveSupervision({
+    operatorId: selected ? selected.id : "",
+    operatorName: selected ? selected.name : ""
+  });
+
+  activeSupervision = getActiveSupervision() || activeSupervision;
 }
 
 function seedAnswerState(questions, existing) {
@@ -312,6 +371,12 @@ function validateChecklist() {
 }
 
 function onContinue() {
+  if (!String(operatorSelectEl.value || "").trim()) {
+    setMessage("Selecciona un operador antes de continuar.", "error");
+    operatorSelectEl.focus();
+    return;
+  }
+
   const validation = validateChecklist();
   if (!validation.ok) {
     setMessage(validation.message, "error");

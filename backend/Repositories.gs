@@ -142,6 +142,23 @@ function listOperatorsByArea(areaId, includeInactive) {
   return results;
 }
 
+function findOperatorByAreaAndId(areaId, operatorId, includeInactive) {
+  var target = String(operatorId || "").trim().toUpperCase();
+  if (!target) {
+    return null;
+  }
+
+  var operators = listOperatorsByArea(areaId, includeInactive);
+  for (var i = 0; i < operators.length; i += 1) {
+    var item = operators[i];
+    if (String(item.id || "").trim().toUpperCase() === target) {
+      return item;
+    }
+  }
+
+  return null;
+}
+
 function appendSupervisionRow(record) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.supervisiones);
   if (!sheet) {

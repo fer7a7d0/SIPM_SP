@@ -100,6 +100,17 @@
   color: #51635f;
 }
 
+.operator-field {
+  border-top: 1px dashed #ccd7d3;
+  padding-top: 12px;
+}
+
+.operator-help {
+  display: block;
+  margin-top: 6px;
+  color: #5b6d68;
+}
+
 @media (prefers-color-scheme: dark) {
   .checklist-group {
     border-color: #345049;
@@ -154,5 +165,13 @@
 
   .checklist-meta {
     color: #a1bbb4;
+  }
+
+  .operator-field {
+    border-top-color: #345049;
+  }
+
+  .operator-help {
+    color: #9bb4ae;
   }
 }

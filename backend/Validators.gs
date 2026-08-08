@@ -83,6 +83,11 @@ function validateSupervisionSavePayload(payload) {
     throw buildError("Hora de inicio requerida para guardar", "BAD_REQUEST");
   }
 
+  var operatorId = String((payload && payload.operatorId) || "").trim();
+  if (!operatorId) {
+    throw buildError("Operador requerido para guardar", "BAD_REQUEST");
+  }
+
   if (!payload || !Array.isArray(payload.answers) || payload.answers.length === 0) {
     throw buildError("Respuestas requeridas para guardar", "BAD_REQUEST");
   }

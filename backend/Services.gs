@@ -557,6 +557,12 @@ function supervisionSaveService(payload) {
     throw buildError("Area no valida para guardar supervision", "AREA_NOT_FOUND");
   }
 
+  var operatorId = String((payload && payload.operatorId) || "").trim();
+  var operator = findOperatorByAreaAndId(areaId, operatorId, false);
+  if (!operator) {
+    throw buildError("Operador no valido para el area", "OPERATOR_NOT_FOUND");
+  }
+
   var endDate = new Date();
   var startDate = new Date(String(payload.startAt || "").trim());
   if (isNaN(startDate.getTime())) {
@@ -576,7 +582,9 @@ function supervisionSaveService(payload) {
     duracion: completion.duracion,
     supervisor: session.userId,
     area: areaId,
-    gps: String(payload.gps || "").trim()
+    gps: String(payload.gps || "").trim(),
+    operatorId: operator.id,
+    operatorName: operator.nombre
   });
 
   var answersById = {};
@@ -650,13 +658,17 @@ function supervisionSaveService(payload) {
       obligatory: q.obligatory ? "SI" : "NO",
       response: String(a.response || "").trim(),
       comment: String(a.comment || "").trim(),
-      photoUrl: photoUrl
+      photoUrl: photoUrl,
+      operatorId: operator.id,
+      operatorName: operator.nombre
     });
   }
 
   return {
     saved: true,
     supervisionId: supervisionId,
+    operatorId: operator.id,
+    operatorName: operator.nombre,
     answeredCount: effectiveQuestions.length,
     photosStored: photosStored,
     fecha: completion.fecha,

@@ -17,7 +17,7 @@ function init() {
   session = getSession();
   active = getActiveSupervision();
 
-  if (!session || !active || !active.areaId || !active.gps || !active.startAt || !active.answers) {
+  if (!session || !active || !active.areaId || !active.operatorId || !active.gps || !active.startAt || !active.answers) {
     window.location.replace(ROUTES.dashboard);
     return;
   }
@@ -36,6 +36,7 @@ function renderSummary() {
 
   const rows = [
     { label: "Area", value: active.areaName || "-" },
+    { label: "Operador", value: active.operatorName || active.operatorId || "-" },
     { label: "Supervisor", value: session.userName || session.userId || "-" },
     { label: "Fecha", value: formatDateEs(now) },
     { label: "Hora inicio", value: formatTimeEs(active.startAt) },
@@ -69,6 +70,8 @@ async function onSave() {
     await saveSupervision({
       token: session.token,
       areaId: active.areaId,
+      operatorId: active.operatorId,
+      operatorName: active.operatorName || "",
       gps: active.gps,
       startAt: active.startAt,
       answers: payloadAnswers
