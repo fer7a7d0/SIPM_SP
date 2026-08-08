@@ -13,6 +13,8 @@ const startCameraBtn = document.getElementById("startCameraBtn");
 const stopCameraBtn = document.getElementById("stopCameraBtn");
 const qrReader = document.getElementById("qrReader");
 const gpsCard = gpsStatus.closest(".card");
+const scannerHint = document.getElementById("scannerHint");
+const scannerProgressBar = document.getElementById("scannerProgressBar");
 
 let activeSession = null;
 let gpsPosition = null;
@@ -38,7 +40,8 @@ async function init() {
 
   setupQrMode();
   setQrControlsEnabled(false);
-  validateQrBtn.hidden = true;
+  updateValidateButtonState();
+  setFlowState("waiting-gps", "Esperando ubicacion GPS...");
 
   validateQrBtn.addEventListener("click", () => {
     processQrCode(String(qrInput.value || ""));
@@ -46,6 +49,8 @@ async function init() {
   startCameraBtn.addEventListener("click", startCamera);
   stopCameraBtn.addEventListener("click", stopCamera);
   qrInput.addEventListener("input", () => {
+    updateValidateButtonState();
+
     if (isSupervisorMode || !gpsPosition) {
       return;
     }
@@ -92,13 +97,18 @@ function setQrControlsEnabled(enabled) {
 async function captureGps() {
   try {
     gpsStatus.textContent = "Obteniendo ubicacion...";
+    setFlowState("waiting-gps", "Obteniendo ubicacion GPS...");
     gpsPosition = await getCurrentPosition();
     gpsStatus.textContent = `GPS activo: ${formatGps(gpsPosition)} (±${Math.round(gpsPosition.accuracy)}m)`;
     setQrControlsEnabled(true);
+    updateValidateButtonState();
+    setFlowState("ready", "GPS listo. Puedes iniciar la camara o ingresar el QR manualmente.");
   } catch (error) {
     gpsPosition = null;
     setQrControlsEnabled(false);
     gpsStatus.textContent = "No disponible";
+    updateValidateButtonState();
+    setFlowState("error", error.message || "No fue posible obtener GPS.");
     setMessage(error.message, "error");
   }
 }
@@ -141,12 +151,15 @@ async function onValidateAndStart(qrCode) {
     lastProcessedQr = qrCode;
     validateQrBtn.disabled = true;
     setValidationState(true);
+    setFlowState("validating", "Validando area...");
     setMessage("Validando area...", "");
 
     const area = await validateQrCode(activeSession.token, qrCode);
 
     qrInput.value = qrCode;
+    updateValidateButtonState();
     setValidationState(true, true);
+    setFlowState("launching", "Cargando supervisión...");
     setMessage("¡Área validada!", "success");
 
     await new Promise((resolve) => {
@@ -161,10 +174,11 @@ async function onValidateAndStart(qrCode) {
   } catch (error) {
     lastProcessedQr = "";
     setValidationState(false);
+    setFlowState("error", error.message || "No se pudo iniciar supervision.");
     setMessage(error.message || "No se pudo iniciar supervision.", "error");
   } finally {
     isSubmitting = false;
-    validateQrBtn.disabled = false;
+    updateValidateButtonState();
   }
 }
 
@@ -210,7 +224,9 @@ async function startCamera() {
     cameraActive = true;
     startCameraBtn.disabled = true;
     stopCameraBtn.disabled = false;
+    setFlowState("camera-active", "Camara activa. Escanea el QR o usa el codigo manualmente.");
   } catch (error) {
+    setFlowState("error", "No se pudo iniciar la camara.");
     setMessage("No se pudo iniciar la camara.", "error");
   }
 }
@@ -231,6 +247,7 @@ async function stopCamera() {
   cameraActive = false;
   startCameraBtn.disabled = false;
   stopCameraBtn.disabled = true;
+  setFlowState("ready", "Camara detenida. Puedes volver a iniciar cuando quieras.");
 }
 
 function setValidationState(enabled, success = false) {
@@ -260,6 +277,40 @@ function setValidationState(enabled, success = false) {
       });
       successAnimationTimer = null;
     }, 700);
+  }
+}
+
+function updateValidateButtonState() {
+  const hasValue = String(qrInput.value || "").trim().length > 0;
+  validateQrBtn.disabled = !hasValue || !gpsPosition || isSubmitting;
+}
+
+function setFlowState(state, message) {
+  if (!scannerHint || !scannerProgressBar) {
+    return;
+  }
+
+  scannerHint.textContent = message;
+  scannerHint.className = "scanner-hint";
+
+  const progressMap = {
+    "waiting-gps": 20,
+    "ready": 40,
+    "camera-active": 60,
+    "validating": 70,
+    "launching": 90,
+    "success": 100,
+    "error": 0
+  };
+
+  const width = progressMap[state] ?? 0;
+  scannerProgressBar.style.width = `${width}%`;
+  scannerProgressBar.classList.toggle("is-active", state === "validating" || state === "launching");
+
+  if (state === "error") {
+    scannerHint.classList.add("is-error");
+  } else if (state === "success") {
+    scannerHint.classList.add("is-success");
   }
 }
 

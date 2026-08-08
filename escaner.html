@@ -32,14 +32,21 @@
 
         <div class="mb-3">
           <div id="qrReader" class="qr-reader"></div>
-          <div class="d-grid gap-2 mt-2">
+          <div class="scanner-actions mt-2">
             <button id="startCameraBtn" class="btn btn-outline-dark">Iniciar camara QR</button>
             <button id="stopCameraBtn" class="btn btn-outline-secondary" disabled>Detener camara</button>
           </div>
         </div>
 
         <div class="d-grid gap-2">
-          <button id="validateQrBtn" class="btn btn-brand btn-lg">Validar y abrir supervision</button>
+          <button id="validateQrBtn" class="btn btn-brand btn-lg" disabled>Validar y abrir supervision</button>
+        </div>
+
+        <div class="scanner-status-shell mt-3" aria-live="polite">
+          <div id="scannerHint" class="scanner-hint">Esperando ubicacion GPS...</div>
+          <div class="scanner-progress-wrap" aria-hidden="true">
+            <div id="scannerProgressBar" class="scanner-progress-bar"></div>
+          </div>
         </div>
 
         <div class="card card-soft mt-3">
