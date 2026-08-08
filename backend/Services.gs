@@ -815,6 +815,120 @@ function historySearchService(payload) {
   };
 }
 
+function historyExportDetailedService(payload) {
+  var session = decodeAndVerifyToken(payload.token);
+  var filters = payload.filters || {};
+  var isSupervisor = String(session.role || "").toLowerCase() === "supervisor";
+
+  if (isSupervisor) {
+    filters.supervisorId = session.userId;
+  }
+
+  var usersMap = mapUsersById();
+  var areasMap = mapAreasById();
+  var questionsMap = mapQuestionsById();
+
+  var supervisions = listSupervisionsWithFilters(filters);
+  var supervisionMap = {};
+
+  for (var i = 0; i < supervisions.length; i += 1) {
+    var item = supervisions[i];
+    var user = usersMap[item.supervisorId] || null;
+    var area = areasMap[item.areaId] || null;
+    supervisionMap[item.id] = {
+      id: item.id,
+      fecha: item.fecha,
+      horaInicio: item.horaInicio,
+      horaFin: item.horaFin,
+      duracion: item.duracion,
+      supervisorId: item.supervisorId,
+      supervisorName: user ? user.nombre : item.supervisorId,
+      areaId: item.areaId,
+      areaName: area ? area.area : item.areaId,
+      operatorId: item.operatorId,
+      operatorName: item.operatorName,
+      gps: item.gps
+    };
+  }
+
+  var answers = listAllAnswers();
+  var rows = [];
+
+  for (var j = 0; j < answers.length; j += 1) {
+    var answer = answers[j];
+    var supervision = supervisionMap[answer.supervisionId] || null;
+    if (!supervision) {
+      continue;
+    }
+
+    var question = questionsMap[answer.questionId] || null;
+
+    rows.push({
+      supervisionId: supervision.id,
+      fecha: supervision.fecha,
+      horaInicio: supervision.horaInicio,
+      horaFin: supervision.horaFin,
+      duracion: supervision.duracion,
+      areaId: supervision.areaId,
+      areaName: supervision.areaName,
+      supervisorId: supervision.supervisorId,
+      supervisorName: supervision.supervisorName,
+      operatorId: supervision.operatorId,
+      operatorName: supervision.operatorName,
+      gps: supervision.gps,
+      checklistId: answer.checklistId,
+      checklistName: answer.checklistName,
+      sectionId: answer.sectionId,
+      sectionName: answer.sectionName,
+      category: answer.category || (question ? question.categoria : ""),
+      questionId: answer.questionId,
+      question: answer.questionText || (question ? question.pregunta : answer.questionId),
+      response: answer.response,
+      comment: answer.comment,
+      photoUrl: answer.photoUrl,
+      checklistOrder: Number(answer.checklistOrder || 0),
+      sectionOrder: Number(answer.sectionOrder || 0),
+      questionOrder: Number(answer.questionOrder || 0)
+    });
+  }
+
+  rows.sort(function (a, b) {
+    var aDateTime = String(a.fecha || "") + " " + String(a.horaInicio || "");
+    var bDateTime = String(b.fecha || "") + " " + String(b.horaInicio || "");
+    if (aDateTime !== bDateTime) {
+      return bDateTime.localeCompare(aDateTime);
+    }
+
+    if (String(a.supervisionId || "") !== String(b.supervisionId || "")) {
+      return String(a.supervisionId || "").localeCompare(String(b.supervisionId || ""));
+    }
+
+    if (Number(a.checklistOrder || 0) !== Number(b.checklistOrder || 0)) {
+      return Number(a.checklistOrder || 0) - Number(b.checklistOrder || 0);
+    }
+
+    if (Number(a.sectionOrder || 0) !== Number(b.sectionOrder || 0)) {
+      return Number(a.sectionOrder || 0) - Number(b.sectionOrder || 0);
+    }
+
+    return Number(a.questionOrder || 0) - Number(b.questionOrder || 0);
+  });
+
+  return {
+    filtersApplied: {
+      fecha: String(filters.fecha || ""),
+      supervisorId: String(filters.supervisorId || ""),
+      areaId: String(filters.areaId || ""),
+      operatorId: String(filters.operatorId || "")
+    },
+    totals: {
+      supervisions: supervisions.length,
+      rows: rows.length
+    },
+    rows: rows
+  };
+}
+
 function buildHistoryCatalog(session, usersMapArg, areasMapArg) {
   var isSupervisor = String((session && session.role) || "").toLowerCase() === "supervisor";
   var usersMap = usersMapArg || mapUsersById();

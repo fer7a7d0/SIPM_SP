@@ -106,6 +106,15 @@ function validateHistorySearchPayload(payload) {
   }
 }
 
+function validateHistoryExportDetailedPayload(payload) {
+  validateTokenPayload(payload);
+
+  var filters = (payload && payload.filters) || {};
+  if (filters && filters.operatorId !== undefined && filters.operatorId !== null) {
+    filters.operatorId = String(filters.operatorId || "").trim();
+  }
+}
+
 function validateHistoryDetailPayload(payload) {
   validateTokenPayload(payload);
 

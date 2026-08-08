@@ -1,7 +1,7 @@
 import "../router.js";
 import { ROUTES } from "../config.js";
 import { getSession } from "../services/authService.js";
-import { getHistoryCatalog, getHistoryDetail, searchHistory } from "../services/historyService.js";
+import { exportHistoryDetailed, getHistoryCatalog, getHistoryDetail, searchHistory } from "../services/historyService.js";
 
 const filterDate = document.getElementById("filterDate");
 const filterSupervisor = document.getElementById("filterSupervisor");
@@ -9,6 +9,7 @@ const filterArea = document.getElementById("filterArea");
 const filterOperator = document.getElementById("filterOperator");
 const searchBtn = document.getElementById("searchBtn");
 const exportCsvBtn = document.getElementById("exportCsvBtn");
+const exportDetailedCsvBtn = document.getElementById("exportDetailedCsvBtn");
 const historyList = document.getElementById("historyList");
 const historyMessage = document.getElementById("historyMessage");
 const detailModal = document.getElementById("detailModal") || document.getElementById("detailPanel");
@@ -40,6 +41,7 @@ async function init() {
 
   searchBtn.addEventListener("click", onSearch);
   exportCsvBtn.addEventListener("click", onExportCsv);
+  exportDetailedCsvBtn.addEventListener("click", onExportDetailedCsv);
   filterDate.addEventListener("change", () => saveCurrentState());
   filterSupervisor.addEventListener("change", () => saveCurrentState());
   filterArea.addEventListener("change", () => saveCurrentState());
@@ -205,6 +207,88 @@ function onExportCsv() {
   URL.revokeObjectURL(url);
 
   setMessage("CSV exportado correctamente.", "success");
+}
+
+async function onExportDetailedCsv() {
+  try {
+    exportDetailedCsvBtn.disabled = true;
+    setMessage("Generando CSV detallado...", "");
+
+    const data = await exportHistoryDetailed({
+      token: session.token,
+      filters: {
+        fecha: filterDate.value,
+        supervisorId: filterSupervisor.value,
+        areaId: filterArea.value,
+        operatorId: filterOperator.value
+      }
+    });
+
+    const rows = data.rows || [];
+    if (!rows.length) {
+      setMessage("No hay detalle para exportar con los filtros seleccionados.", "error");
+      return;
+    }
+
+    const csvRows = [
+      [
+        "ID Supervision",
+        "Fecha",
+        "Hora inicio",
+        "Hora fin",
+        "Duracion",
+        "Area",
+        "Supervisor",
+        "Operador",
+        "GPS",
+        "Checklist",
+        "Seccion",
+        "Categoria",
+        "Pregunta",
+        "Respuesta",
+        "Comentario",
+        "Foto URL"
+      ],
+      ...rows.map((item) => [
+        item.supervisionId || "",
+        item.fecha || "",
+        item.horaInicio || "",
+        item.horaFin || "",
+        item.duracion || "",
+        item.areaName || item.areaId || "",
+        item.supervisorName || item.supervisorId || "",
+        item.operatorName || item.operatorId || "",
+        item.gps || "",
+        item.checklistName || item.checklistId || "",
+        item.sectionName || item.sectionId || "",
+        item.category || "",
+        item.question || item.questionId || "",
+        item.response || "",
+        item.comment || "",
+        item.photoUrl || ""
+      ])
+    ];
+
+    const csvContent = csvRows.map((row) => row.map(escapeCsvCell).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const fileDate = String(filterDate.value || "").trim() || new Date().toISOString().slice(0, 10);
+    const fileName = `historial_supervisiones_detallado_${fileDate}.csv`;
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+
+    setMessage("CSV detallado exportado correctamente.", "success");
+  } catch (error) {
+    setMessage(error.message || "No se pudo exportar el CSV detallado.", "error");
+  } finally {
+    exportDetailedCsvBtn.disabled = false;
+  }
 }
 
 function escapeCsvCell(value) {

@@ -64,6 +64,11 @@ function historySearchController(payload) {
   return historySearchService(payload);
 }
 
+function historyExportDetailedController(payload) {
+  validateHistoryExportDetailedPayload(payload);
+  return historyExportDetailedService(payload);
+}
+
 function historyDetailController(payload) {
   validateHistoryDetailPayload(payload);
   return historyDetailService(payload);

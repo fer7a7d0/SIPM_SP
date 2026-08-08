@@ -30,6 +30,8 @@ function routeAction(action, payload) {
       return historyCatalogController(payload);
     case "history.search":
       return historySearchController(payload);
+    case "history.exportDetailed":
+      return historyExportDetailedController(payload);
     case "history.detail":
       return historyDetailController(payload);
     default:
