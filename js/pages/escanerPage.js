@@ -246,9 +246,9 @@ function setValidationState(enabled, success = false) {
       return;
     }
     element.classList.toggle("scan-valid", enabled && (element === qrInput || element === qrReader));
-    element.classList.toggle("scan-valid-soft", enabled && (element === gpsCard));
-    element.classList.toggle("scan-valid-button", enabled && (element === validateQrBtn || element === startCameraBtn || element === stopCameraBtn));
-    element.classList.toggle("scan-success", success && (element === qrInput || element === qrReader || element === gpsCard || element === validateQrBtn || element === startCameraBtn || element === stopCameraBtn));
+    element.classList.toggle("scan-valid-soft", enabled && (element === gpsCard || element === startCameraBtn || element === stopCameraBtn));
+    element.classList.toggle("scan-valid-button", enabled && (element === validateQrBtn));
+    element.classList.toggle("scan-success", success && (element === qrInput || element === qrReader || element === gpsCard || element === validateQrBtn));
   });
 
   if (success) {

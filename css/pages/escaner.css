@@ -39,8 +39,9 @@
 }
 
 .scan-valid-soft {
-  border-color: #1f8f5f !important;
-  box-shadow: 0 0 0 0.18rem rgba(31, 143, 95, 0.14) !important;
+  border-color: #c9d8d2 !important;
+  box-shadow: 0 10px 24px rgba(24, 35, 33, 0.08) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
 }
 
 .scan-valid-button {
@@ -93,9 +94,7 @@
 }
 
 .scan-success#qrInput,
-.scan-success#validateQrBtn,
-.scan-success#startCameraBtn,
-.scan-success#stopCameraBtn {
+.scan-success#validateQrBtn {
   transform: translateY(-1px) scale(1.005);
   box-shadow: 0 8px 18px rgba(31, 143, 95, 0.1);
 }
@@ -171,8 +170,9 @@
   }
 
   .scan-valid-soft {
-    border-color: #4fe0a2 !important;
-    box-shadow: 0 0 0 0.18rem rgba(79, 224, 162, 0.12) !important;
+    border-color: #4c655d !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24) !important;
+    background: rgba(23, 33, 31, 0.9) !important;
   }
 
   .scan-valid-button {
