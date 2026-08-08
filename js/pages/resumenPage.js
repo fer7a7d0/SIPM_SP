@@ -36,8 +36,8 @@ function renderSummary() {
 
   const rows = [
     { label: "Area", value: active.areaName || "-" },
-    { label: "Operador", value: active.operatorName || active.operatorId || "-" },
     { label: "Supervisor", value: session.userName || session.userId || "-" },
+    { label: "Operador", value: active.operatorName || active.operatorId || "-" },
     { label: "Fecha", value: formatDateEs(now) },
     { label: "Hora inicio", value: formatTimeEs(active.startAt) },
     { label: "Hora termino", value: formatTimeEs(now) },
