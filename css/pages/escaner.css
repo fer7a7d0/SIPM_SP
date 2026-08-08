@@ -21,13 +21,15 @@
 }
 
 .scanner-processing-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   display: none;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(7, 20, 18, 0.72);
+  background: rgba(7, 20, 18, 0.78);
   color: #f7fbfa;
   opacity: 0;
   visibility: hidden;
