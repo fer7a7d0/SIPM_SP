@@ -31,17 +31,25 @@
         </div>
 
         <div class="mb-3">
-          <div id="qrReader" class="qr-reader"></div>
+          <div class="scanner-status-shell mb-3" aria-live="polite">
+            <div id="scannerHint" class="scanner-hint">Esperando ubicacion GPS...</div>
+            <div class="scanner-progress-wrap" aria-hidden="true">
+              <div id="scannerProgressBar" class="scanner-progress-bar"></div>
+            </div>
+          </div>
+
+          <div id="qrReader" class="qr-reader">
+            <div id="scannerProcessingOverlay" class="scanner-processing-overlay" aria-hidden="true">
+              <div class="scanner-processing-panel">
+                <div class="scanner-processing-spinner"></div>
+                <div id="scannerProcessingTitle" class="scanner-processing-title">Procesando escaneo</div>
+                <div id="scannerProcessingSubtitle" class="scanner-processing-subtitle">Se mantendrá visible el estado del flujo.</div>
+              </div>
+            </div>
+          </div>
           <div class="scanner-actions mt-2">
             <button id="startCameraBtn" class="btn btn-outline-dark">Iniciar camara QR</button>
             <button id="stopCameraBtn" class="btn btn-outline-secondary" disabled>Detener camara</button>
-          </div>
-        </div>
-
-        <div class="scanner-status-shell mt-3" aria-live="polite">
-          <div id="scannerHint" class="scanner-hint">Esperando ubicacion GPS...</div>
-          <div class="scanner-progress-wrap" aria-hidden="true">
-            <div id="scannerProgressBar" class="scanner-progress-bar"></div>
           </div>
         </div>
 

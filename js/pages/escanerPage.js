@@ -14,6 +14,9 @@ const qrReader = document.getElementById("qrReader");
 const gpsCard = gpsStatus.closest(".card");
 const scannerHint = document.getElementById("scannerHint");
 const scannerProgressBar = document.getElementById("scannerProgressBar");
+const scannerProcessingOverlay = document.getElementById("scannerProcessingOverlay");
+const scannerProcessingTitle = document.getElementById("scannerProcessingTitle");
+const scannerProcessingSubtitle = document.getElementById("scannerProcessingSubtitle");
 
 let activeSession = null;
 let gpsPosition = null;
@@ -145,6 +148,7 @@ async function onValidateAndStart(qrCode) {
     isSubmitting = true;
     lastProcessedQr = qrCode;
     setValidationState(true);
+    setProcessingOverlayVisible(true, "Validando área", "Se está confirmando la zona y el estado permanece visible.");
     setFlowState("validating", "Validando área...");
     setMessage("Validando área...", "");
 
@@ -152,6 +156,7 @@ async function onValidateAndStart(qrCode) {
 
     qrInput.value = qrCode;
     setValidationState(true, true);
+    setProcessingOverlayVisible(true, "Iniciando supervisión", "Se está preparando el siguiente paso.");
     setFlowState("launching", "Iniciando supervisión...");
     setMessage("Iniciando supervisión...", "success");
 
@@ -169,6 +174,7 @@ async function onValidateAndStart(qrCode) {
     setFlowState("error", error.message || "No se pudo iniciar supervision.");
     setMessage(error.message || "No se pudo iniciar supervision.", "error");
   } finally {
+    setProcessingOverlayVisible(false);
     isSubmitting = false;
   }
 }
@@ -207,7 +213,10 @@ async function startCamera() {
       { fps: 10, qrbox: { width: 240, height: 240 } },
       (decodedText) => {
         qrInput.value = decodedText;
-        processQrCode(decodedText);
+        setProcessingOverlayVisible(true, "QR detectado", "Se está validando el código y el estado sigue visible.");
+        void stopCamera().finally(() => {
+          processQrCode(decodedText);
+        });
       },
       () => {}
     );
@@ -268,6 +277,16 @@ function setValidationState(enabled, success = false) {
       successAnimationTimer = null;
     }, 700);
   }
+}
+
+function setProcessingOverlayVisible(visible, title = "Procesando escaneo", subtitle = "Se mantendrá visible el estado del flujo.") {
+  if (!scannerProcessingOverlay || !scannerProcessingTitle || !scannerProcessingSubtitle) {
+    return;
+  }
+
+  scannerProcessingOverlay.classList.toggle("is-visible", visible);
+  scannerProcessingTitle.textContent = title;
+  scannerProcessingSubtitle.textContent = subtitle;
 }
 
 function setFlowState(state, message) {
