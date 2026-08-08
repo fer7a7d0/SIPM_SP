@@ -119,18 +119,10 @@
 
         <section class="kpi-block mb-3" id="trendKpiBlock">
           <h3 class="title-sm mb-2">Tendencia de hallazgos (7 dias)</h3>
-          <div class="table-wrap">
-            <table class="table table-sm align-middle mb-0" id="trendTable">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Hallazgos</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td colspan="2" class="text-muted">Sin datos</td></tr>
-              </tbody>
-            </table>
+          <div class="trend-chart-shell">
+            <div id="trendChartSummary" class="trend-chart-summary">Hallazgos diarios del periodo.</div>
+            <div id="trendChart" class="trend-chart" aria-label="Grafica de tendencia de hallazgos en 7 dias"></div>
+            <p id="trendChartEmpty" class="trend-chart-empty text-muted mb-0" hidden>Sin datos</p>
           </div>
         </section>
 

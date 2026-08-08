@@ -15,7 +15,9 @@ const kpiWeekHallazgos = document.getElementById("kpiWeekHallazgos");
 const kpiMonthHallazgos = document.getElementById("kpiMonthHallazgos");
 const supervisorTableBody = document.querySelector("#supervisorTable tbody");
 const operatorTableBody = document.querySelector("#operatorTable tbody");
-const trendTableBody = document.querySelector("#trendTable tbody");
+const trendChart = document.getElementById("trendChart");
+const trendChartEmpty = document.getElementById("trendChartEmpty");
+const trendChartSummary = document.getElementById("trendChartSummary");
 const areaTableBody = document.querySelector("#areaTable tbody");
 const operatorRankingTableBody = document.querySelector("#operatorRankingTable tbody");
 const timeGlobal = document.getElementById("timeGlobal");
@@ -148,21 +150,100 @@ function formatComplianceLabel(compliance) {
 }
 
 function renderTrendTable(rows) {
-  trendTableBody.innerHTML = "";
+  trendChart.innerHTML = "";
 
   if (!rows.length) {
-    trendTableBody.innerHTML = '<tr><td colspan="2" class="text-muted">Sin datos</td></tr>';
+    trendChart.hidden = true;
+    trendChartEmpty.hidden = false;
+    trendChartSummary.textContent = "Hallazgos diarios del periodo.";
     return;
   }
 
-  rows.forEach((row) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${row.date || "-"}</td>
-      <td>${row.hallazgos ?? "-"}</td>
-    `;
-    trendTableBody.appendChild(tr);
+  trendChart.hidden = false;
+  trendChartEmpty.hidden = true;
+
+  const points = rows.map((row) => ({
+    date: String(row.date || ""),
+    hallazgos: Number(row.hallazgos || 0)
+  }));
+
+  const totalHallazgos = points.reduce((sum, item) => sum + item.hallazgos, 0);
+  const maxValue = Math.max(...points.map((item) => item.hallazgos), 0, 1);
+  const width = 720;
+  const height = 280;
+  const padding = { top: 24, right: 20, bottom: 48, left: 42 };
+  const innerWidth = width - padding.left - padding.right;
+  const innerHeight = height - padding.top - padding.bottom;
+  const steps = points.length > 1 ? points.length - 1 : 1;
+  const lineColor = "#c04b8d";
+  const pointFill = "#ffffff";
+  const axisColor = "#8a627f";
+  const gridColor = "rgba(122, 47, 112, 0.18)";
+  const textColor = "#6e5b6a";
+
+  trendChartSummary.textContent = `Total del periodo: ${totalHallazgos} hallazgos.`;
+
+  const yTicks = buildTrendTicks(maxValue);
+  const svgParts = [];
+  svgParts.push(`<svg viewBox="0 0 ${width} ${height}" class="trend-chart-svg" role="img" aria-label="Grafica de linea y puntos de hallazgos por dia">`);
+
+  yTicks.forEach((tick) => {
+    const y = padding.top + innerHeight - (tick / maxValue) * innerHeight;
+    svgParts.push(`<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="trend-grid-line" />`);
+    svgParts.push(`<text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" class="trend-axis-label">${tick}</text>`);
   });
+
+  svgParts.push(`<line x1="${padding.left}" y1="${padding.top + innerHeight}" x2="${width - padding.right}" y2="${padding.top + innerHeight}" class="trend-axis-line" />`);
+
+  const polylinePoints = points.map((item, index) => {
+    const x = padding.left + (index / steps) * innerWidth;
+    const y = padding.top + innerHeight - (item.hallazgos / maxValue) * innerHeight;
+    return `${x},${y}`;
+  }).join(" ");
+
+  svgParts.push(`<polyline fill="none" points="${polylinePoints}" class="trend-line" />`);
+
+  points.forEach((item, index) => {
+    const x = padding.left + (index / steps) * innerWidth;
+    const y = padding.top + innerHeight - (item.hallazgos / maxValue) * innerHeight;
+    const label = formatTrendDate(item.date);
+
+    svgParts.push(`<circle cx="${x}" cy="${y}" r="5" class="trend-point" />`);
+    svgParts.push(`<text x="${x}" y="${padding.top + innerHeight + 22}" text-anchor="middle" class="trend-axis-label">${label}</text>`);
+    svgParts.push(`<text x="${x}" y="${y - 10}" text-anchor="middle" class="trend-value-label">${item.hallazgos}</text>`);
+  });
+
+  svgParts.push("</svg>");
+  trendChart.innerHTML = svgParts.join("");
+}
+
+function buildTrendTicks(maxValue) {
+  if (maxValue <= 1) {
+    return [0, 1];
+  }
+
+  var tickCount = 4;
+  var step = Math.ceil(maxValue / tickCount);
+  var ticks = [];
+
+  for (var value = 0; value <= maxValue; value += step) {
+    ticks.push(value);
+  }
+
+  if (ticks[ticks.length - 1] !== maxValue) {
+    ticks.push(maxValue);
+  }
+
+  return ticks;
+}
+
+function formatTrendDate(value) {
+  const raw = String(value || "").trim();
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return raw || "-";
+  }
+  return `${match[3]}/${match[2]}`;
 }
 
 function renderAreaTable(rows) {

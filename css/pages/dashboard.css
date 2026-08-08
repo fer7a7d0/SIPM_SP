@@ -170,6 +170,67 @@
   overflow-x: auto;
 }
 
+.trend-chart-shell {
+  display: grid;
+  gap: 10px;
+}
+
+.trend-chart-summary {
+  color: #7a2f70;
+  font-weight: 700;
+}
+
+.trend-chart {
+  width: 100%;
+  min-height: 280px;
+}
+
+.trend-chart-empty {
+  color: #7a2f70;
+}
+
+.trend-chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.trend-grid-line {
+  stroke: rgba(122, 47, 112, 0.18);
+  stroke-width: 1;
+}
+
+.trend-axis-line {
+  stroke: #8a627f;
+  stroke-width: 1.4;
+}
+
+.trend-line {
+  stroke: #c04b8d;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trend-point {
+  fill: #ffffff;
+  stroke: #c04b8d;
+  stroke-width: 3;
+}
+
+.trend-axis-label {
+  fill: #6e5b6a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.trend-value-label {
+  fill: #7a2f70;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 @media (prefers-color-scheme: dark) {
   .dashboard-page {
     color: #e7f2ef;
@@ -261,6 +322,34 @@
 
   #trendKpiBlock .title-sm {
     color: #e2b6dd;
+  }
+
+  .trend-chart-summary,
+  .trend-chart-empty,
+  .trend-value-label {
+    color: #e2b6dd;
+    fill: #e2b6dd;
+  }
+
+  .trend-grid-line {
+    stroke: rgba(226, 182, 221, 0.16);
+  }
+
+  .trend-axis-line {
+    stroke: #a985a4;
+  }
+
+  .trend-line {
+    stroke: #df8ecf;
+  }
+
+  .trend-point {
+    fill: #251d29;
+    stroke: #df8ecf;
+  }
+
+  .trend-axis-label {
+    fill: #cfa8c9;
   }
 
   #rankingKpiBlock {
