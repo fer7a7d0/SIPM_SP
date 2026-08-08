@@ -15,6 +15,7 @@
   border-radius: 14px;
   overflow: hidden;
   background: #f7faf9;
+  position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
@@ -25,7 +26,7 @@
 #startCameraBtn,
 #stopCameraBtn,
 #validateQrBtn {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .scan-valid {
@@ -46,6 +47,96 @@
   border-color: #1f8f5f !important;
   color: #116543 !important;
   background: rgba(31, 143, 95, 0.08) !important;
+}
+
+.scan-success {
+  animation: scan-success-pulse 0.75s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.scan-success.qr-reader {
+  background: linear-gradient(135deg, #f2fdf7 0%, #e9f9ef 100%);
+  box-shadow: 0 0 0 0.16rem rgba(31, 143, 95, 0.16), 0 10px 24px rgba(31, 143, 95, 0.1) !important;
+}
+
+.scan-success.qr-reader::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.65) 40%, transparent 100%);
+  transform: translateX(-100%);
+  animation: scan-success-shine 0.8s ease-out;
+  pointer-events: none;
+}
+
+.scan-success.qr-reader::after {
+  content: "";
+  position: absolute;
+  inset: auto 1rem 1rem auto;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #1f8f5f 0%, #2fb974 100%);
+  box-shadow: 0 10px 24px rgba(31, 143, 95, 0.24), inset 0 1px 1px rgba(255,255,255,0.3);
+  animation: scan-success-check 0.72s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.scan-success.qr-reader::after {
+  content: "";
+}
+
+.scan-success.qr-reader::after {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 12.5L10.5 16L17 9.5' stroke='white' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/1rem no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 12.5L10.5 16L17 9.5' stroke='white' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/1rem no-repeat;
+}
+
+.scan-success#qrInput,
+.scan-success#validateQrBtn,
+.scan-success#startCameraBtn,
+.scan-success#stopCameraBtn {
+  transform: translateY(-1px) scale(1.005);
+  box-shadow: 0 8px 18px rgba(31, 143, 95, 0.1);
+}
+
+@keyframes scan-success-pulse {
+  0% {
+    transform: scale(0.985);
+    opacity: 0.96;
+  }
+  60% {
+    transform: scale(1.008);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scan-success-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes scan-success-check {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -88,5 +179,15 @@
     border-color: #4fe0a2 !important;
     color: #bef7db !important;
     background: rgba(79, 224, 162, 0.12) !important;
+  }
+
+  .scan-success.qr-reader {
+    background: linear-gradient(135deg, #11261d 0%, #0e1f17 100%);
+    box-shadow: 0 0 0 0.16rem rgba(79, 224, 162, 0.2), 0 10px 24px rgba(79, 224, 162, 0.12) !important;
+  }
+
+  .scan-success.qr-reader::after {
+    background: linear-gradient(135deg, #4fe0a2 0%, #1dbb6b 100%);
+    box-shadow: 0 10px 24px rgba(79, 224, 162, 0.2), inset 0 1px 1px rgba(255,255,255,0.25);
   }
 }

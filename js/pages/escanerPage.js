@@ -22,6 +22,7 @@ let isSupervisorMode = false;
 let isSubmitting = false;
 let manualInputTimer = null;
 let lastProcessedQr = "";
+let successAnimationTimer = null;
 
 init();
 
@@ -145,6 +146,12 @@ async function onValidateAndStart(qrCode) {
     const area = await validateQrCode(activeSession.token, qrCode);
 
     qrInput.value = qrCode;
+    setValidationState(true, true);
+    setMessage("¡Área validada!", "success");
+
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 700);
+    });
 
     setMessage("Iniciando supervision...", "");
     await launchSupervision({ areaId: area.area.id, qrCode });
@@ -226,7 +233,12 @@ async function stopCamera() {
   stopCameraBtn.disabled = true;
 }
 
-function setValidationState(enabled) {
+function setValidationState(enabled, success = false) {
+  if (successAnimationTimer) {
+    window.clearTimeout(successAnimationTimer);
+    successAnimationTimer = null;
+  }
+
   const targets = [qrInput, qrReader, gpsCard, validateQrBtn, startCameraBtn, stopCameraBtn];
 
   targets.forEach((element) => {
@@ -236,7 +248,19 @@ function setValidationState(enabled) {
     element.classList.toggle("scan-valid", enabled && (element === qrInput || element === qrReader));
     element.classList.toggle("scan-valid-soft", enabled && (element === gpsCard));
     element.classList.toggle("scan-valid-button", enabled && (element === validateQrBtn || element === startCameraBtn || element === stopCameraBtn));
+    element.classList.toggle("scan-success", success && (element === qrInput || element === qrReader || element === gpsCard || element === validateQrBtn || element === startCameraBtn || element === stopCameraBtn));
   });
+
+  if (success) {
+    successAnimationTimer = window.setTimeout(() => {
+      targets.forEach((element) => {
+        if (element) {
+          element.classList.remove("scan-success");
+        }
+      });
+      successAnimationTimer = null;
+    }, 700);
+  }
 }
 
 function setMessage(message, type) {
