@@ -279,16 +279,24 @@ function buildSupervisorMetrics(items) {
   var tz = Session.getScriptTimeZone();
   var todayKey = Utilities.formatDate(now, tz, "yyyy-MM-dd");
   var weekStartKey = Utilities.formatDate(shiftDateDays(now, -6), tz, "yyyy-MM-dd");
-  var monthStartKey = Utilities.formatDate(shiftDateDays(now, -29), tz, "yyyy-MM-dd");
+  var monthStartKey = Utilities.formatDate(new Date(now.getFullYear(), now.getMonth(), 1), tz, "yyyy-MM-dd");
+  var monthTarget = calculateMonthlySupervisionTargetToDate(now);
 
   var rows = keys.map(function (supervisorId) {
     var list = bySupervisor[supervisorId];
+    var monthMetrics = buildPeriodMetrics(filterByDateRange(list, monthStartKey, todayKey), monthStartKey, todayKey);
+    var monthDone = Number(monthMetrics.supervisionesFinalizadas || 0);
     return {
       supervisorId: supervisorId,
       supervisorName: list[0].supervisorName,
       day: buildPeriodMetrics(filterByDateRange(list, todayKey, todayKey), todayKey, todayKey),
       week: buildPeriodMetrics(filterByDateRange(list, weekStartKey, todayKey), weekStartKey, todayKey),
-      month: buildPeriodMetrics(filterByDateRange(list, monthStartKey, todayKey), monthStartKey, todayKey)
+      month: monthMetrics,
+      monthCompliance: {
+        realizadas: monthDone,
+        meta: monthTarget,
+        cumplimientoPct: monthTarget > 0 ? toPercent(monthDone, monthTarget) : null
+      }
     };
   });
 
@@ -297,6 +305,26 @@ function buildSupervisorMetrics(items) {
   });
 
   return rows;
+}
+
+function calculateMonthlySupervisionTargetToDate(now) {
+  var year = now.getFullYear();
+  var month = now.getMonth();
+  var dayOfMonth = now.getDate();
+  var target = 0;
+
+  for (var day = 1; day <= dayOfMonth; day += 1) {
+    var date = new Date(year, month, day);
+    var weekDay = date.getDay();
+
+    if (weekDay >= 1 && weekDay <= 5) {
+      target += 2;
+    } else if (weekDay === 6) {
+      target += 1;
+    }
+  }
+
+  return target;
 }
 
 function buildFindingsTrend(items, startKey, endKey) {

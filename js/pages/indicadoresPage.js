@@ -66,20 +66,37 @@ function renderSupervisorTable(rows) {
   supervisorTableBody.innerHTML = "";
 
   if (!rows.length) {
-    supervisorTableBody.innerHTML = '<tr><td colspan="4" class="text-muted">Sin datos</td></tr>';
+    supervisorTableBody.innerHTML = '<tr><td colspan="5" class="text-muted">Sin datos</td></tr>';
     return;
   }
 
   rows.forEach((row) => {
+    const compliance = row.monthCompliance || {};
+    const complianceLabel = formatComplianceLabel(compliance);
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row.supervisorName || row.supervisorId || "-"}</td>
       <td>${row.day?.supervisionesFinalizadas ?? "-"}</td>
       <td>${row.week?.supervisionesFinalizadas ?? "-"}</td>
       <td>${row.month?.supervisionesFinalizadas ?? "-"}</td>
+      <td>${complianceLabel}</td>
     `;
     supervisorTableBody.appendChild(tr);
   });
+}
+
+function formatComplianceLabel(compliance) {
+  const done = Number(compliance.realizadas ?? 0);
+  const target = Number(compliance.meta ?? 0);
+  const pct = compliance.cumplimientoPct;
+
+  if (!target) {
+    return `${done}/0 (-)`;
+  }
+
+  const pctText = pct === null || pct === undefined || Number.isNaN(Number(pct)) ? "-" : `${pct}%`;
+  return `${done}/${target} (${pctText})`;
 }
 
 function renderTrendTable(rows) {
