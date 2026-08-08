@@ -6,6 +6,8 @@
 .login-surface {
   margin-top: 2rem;
   padding: 1.25rem;
+  --surface-max-width: 520px;
+  --surface-max-width-lg: 560px;
 }
 
 @media (min-width: 576px) {

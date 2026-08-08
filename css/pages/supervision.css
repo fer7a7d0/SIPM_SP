@@ -1,5 +1,7 @@
-.surface {
-  max-width: 560px;
+
+.dashboard-surface {
+  --surface-max-width: 980px;
+  --surface-max-width-lg: 1160px;
 }
 
 .checklist-stack {

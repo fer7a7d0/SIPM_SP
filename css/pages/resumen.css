@@ -1,5 +1,7 @@
 .dashboard-surface {
   margin-top: 0.5rem;
+  --surface-max-width: 760px;
+  --surface-max-width-lg: 920px;
 }
 
 .summary-list {

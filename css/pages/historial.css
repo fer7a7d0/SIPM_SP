@@ -1,9 +1,7 @@
-.surface {
-  max-width: 640px;
-}
-
 .dashboard-surface {
   margin-top: 0.5rem;
+  --surface-max-width: 980px;
+  --surface-max-width-lg: 1180px;
 }
 
 .filters-grid {

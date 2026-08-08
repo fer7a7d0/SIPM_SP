@@ -1,6 +1,8 @@
 .dashboard-surface {
   margin-top: 0.5rem;
   padding: 1rem;
+  --surface-max-width: 1040px;
+  --surface-max-width-lg: 1220px;
 }
 
 .dashboard-page .btn-lg {

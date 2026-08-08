@@ -39,7 +39,7 @@ main {
 }
 
 .surface {
-  width: min(100%, 520px);
+  width: min(100%, var(--surface-max-width, 1000px));
   background: var(--surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
@@ -160,6 +160,6 @@ main {
 
 @media (min-width: 992px) {
   .surface {
-    width: min(100%, 560px);
+    width: min(100%, var(--surface-max-width-lg, 1120px));
   }
 }
