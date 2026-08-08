@@ -217,6 +217,22 @@ function createQuestionCard(question) {
   photoButton.setAttribute("for", photoInputId);
   photoButton.textContent = "Agregar foto";
 
+  const removePhotoBtn = document.createElement("button");
+  removePhotoBtn.type = "button";
+  removePhotoBtn.className = "btn btn-outline-secondary w-100 photo-remove-action mt-2";
+  removePhotoBtn.textContent = "Quitar foto";
+  removePhotoBtn.hidden = !state.photoDataUrl;
+
+  removePhotoBtn.addEventListener("click", () => {
+    state.photoDataUrl = "";
+    photoInput.value = "";
+    preview.hidden = true;
+    preview.removeAttribute("src");
+    removePhotoBtn.hidden = true;
+    persistDraft();
+    recalculateCounters();
+  });
+
   const preview = document.createElement("img");
   preview.className = "photo-preview";
   preview.alt = "Vista previa de evidencia";
@@ -236,6 +252,7 @@ function createQuestionCard(question) {
       state.photoDataUrl = dataUrl;
       preview.src = dataUrl;
       preview.hidden = false;
+      removePhotoBtn.hidden = false;
       persistDraft();
       recalculateCounters();
     } catch (error) {
@@ -250,6 +267,7 @@ function createQuestionCard(question) {
   wrapper.appendChild(select);
   wrapper.appendChild(comment);
   wrapper.appendChild(photoButton);
+  wrapper.appendChild(removePhotoBtn);
   wrapper.appendChild(photoInput);
   wrapper.appendChild(preview);
 
