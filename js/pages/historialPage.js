@@ -40,7 +40,6 @@ async function init() {
   session = localSession;
 
   searchBtn.addEventListener("click", onSearch);
-  exportCsvBtn.addEventListener("click", onExportCsv);
   exportDetailedCsvBtn.addEventListener("click", onExportDetailedCsv);
   filterDate.addEventListener("change", () => saveCurrentState());
   filterSupervisor.addEventListener("change", () => saveCurrentState());
