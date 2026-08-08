@@ -96,6 +96,8 @@ function dashboardKpiSummaryService(payload) {
       supervisorName: usersMap[item.supervisorId] ? usersMap[item.supervisorId].nombre : item.supervisorId,
       areaId: item.areaId,
       areaName: areasMap[item.areaId] ? areasMap[item.areaId].area : item.areaId,
+      operatorId: item.operatorId,
+      operatorName: item.operatorName,
       duracionMin: parseDurationToMinutes(item.duracion),
       cumple: agg.cumple,
       noCumple: agg.noCumple,
@@ -117,6 +119,7 @@ function dashboardKpiSummaryService(payload) {
       month: buildPeriodMetrics(monthSlice, monthStartKey, todayKey)
     },
     bySupervisor: buildSupervisorMetrics(enriched),
+    byOperator: buildOperatorMetrics(monthSlice),
     findingsTrend: buildFindingsTrend(enriched, weekStartKey, todayKey),
     areaRanking: buildAreaRanking(monthSlice),
     timeMetrics: buildTimeMetrics(monthSlice)
@@ -303,6 +306,61 @@ function buildSupervisorMetrics(items) {
 
   rows.sort(function (a, b) {
     return String(a.supervisorName || "").localeCompare(String(b.supervisorName || ""));
+  });
+
+  return rows;
+}
+
+function buildOperatorMetrics(items) {
+  var byOperator = {};
+
+  for (var i = 0; i < items.length; i += 1) {
+    var item = items[i];
+    var operatorId = String(item.operatorId || "").trim();
+    var key = operatorId || "SIN_OPERADOR";
+
+    if (!byOperator[key]) {
+      byOperator[key] = {
+        operatorId: operatorId,
+        operatorName: String(item.operatorName || "").trim() || "Sin operador",
+        supervisiones: 0,
+        hallazgos: 0,
+        cumple: 0,
+        evaluables: 0,
+        areas: {}
+      };
+    }
+
+    byOperator[key].supervisiones += 1;
+    byOperator[key].hallazgos += Number(item.hallazgos || 0);
+    byOperator[key].cumple += Number(item.cumple || 0);
+    byOperator[key].evaluables += Number(item.evaluables || 0);
+    byOperator[key].areas[item.areaId] = item.areaName || item.areaId || "-";
+  }
+
+  var rows = Object.keys(byOperator).map(function (key) {
+    var row = byOperator[key];
+    var areaNames = Object.keys(row.areas).map(function (areaKey) {
+      return row.areas[areaKey];
+    }).sort(function (a, b) {
+      return String(a || "").localeCompare(String(b || ""));
+    });
+
+    return {
+      operatorId: row.operatorId,
+      operatorName: row.operatorName,
+      areas: areaNames,
+      supervisionesFinalizadas: row.supervisiones,
+      hallazgosTotales: row.hallazgos,
+      cumplimientoPct: toPercent(row.cumple, row.evaluables)
+    };
+  });
+
+  rows.sort(function (a, b) {
+    if (Number(b.supervisionesFinalizadas || 0) !== Number(a.supervisionesFinalizadas || 0)) {
+      return Number(b.supervisionesFinalizadas || 0) - Number(a.supervisionesFinalizadas || 0);
+    }
+    return String(a.operatorName || "").localeCompare(String(b.operatorName || ""));
   });
 
   return rows;
@@ -736,6 +794,8 @@ function historySearchService(payload) {
       supervisorName: user ? user.nombre : item.supervisorId,
       areaId: item.areaId,
       areaName: area ? area.area : item.areaId,
+      operatorId: item.operatorId,
+      operatorName: item.operatorName,
       gps: item.gps
     };
   });
@@ -844,6 +904,8 @@ function historyDetailService(payload) {
       supervisorName: usersMap[supervision.supervisor] ? usersMap[supervision.supervisor].nombre : supervision.supervisor,
       areaId: supervision.area,
       areaName: areasMap[supervision.area] ? areasMap[supervision.area].area : supervision.area,
+      operatorId: supervision.operatorId,
+      operatorName: supervision.operatorName,
       gps: supervision.gps
     },
     answers: answers

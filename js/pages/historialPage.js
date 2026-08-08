@@ -165,6 +165,7 @@ function renderList(items) {
         <small>${formattedDate} ${formattedStartTime}</small>
       </div>
       <p class="mb-1">Supervisor: ${item.supervisorName}</p>
+      <p class="mb-1">Operador: ${item.operatorName || item.operatorId || "-"}</p>
       <p class="mb-2">Duracion: ${item.duracion || "En curso"}</p>
       <button class="btn btn-sm btn-outline-dark" data-id="${item.id}">Ver detalle</button>
     `;
@@ -213,6 +214,7 @@ function renderDetail(data) {
   summary.innerHTML = `
     <p><strong>Area:</strong> ${supervision.areaName || "-"}</p>
     <p><strong>Supervisor:</strong> ${supervision.supervisorName || "-"}</p>
+    <p><strong>Operador:</strong> ${supervision.operatorName || supervision.operatorId || "-"}</p>
     <p><strong>Inicio:</strong> ${formattedDate} ${formattedStartTime}</p>
     <p><strong>Fin:</strong> ${formattedEndDateTime}</p>
     <p><strong>Duracion:</strong> ${supervision.duracion || "-"}</p>

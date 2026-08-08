@@ -116,6 +116,15 @@
   color: #144a7a;
 }
 
+#operatorKpiBlock {
+  border-color: #5e88b6;
+  background: linear-gradient(180deg, #eef5ff 0%, #f7faff 100%);
+}
+
+#operatorKpiBlock .title-sm {
+  color: #1f4f83;
+}
+
 #trendKpiBlock {
   border-color: #d7a4d1;
   background: linear-gradient(180deg, #fdf0fb 0%, #fff7fe 100%);
@@ -225,6 +234,15 @@
 
   #supervisorKpiBlock .title-sm {
     color: #9cc8ee;
+  }
+
+  #operatorKpiBlock {
+    border-color: #3f6086;
+    background: linear-gradient(180deg, #1b2736 0%, #1a2431 100%);
+  }
+
+  #operatorKpiBlock .title-sm {
+    color: #a7c6e9;
   }
 
   #trendKpiBlock {

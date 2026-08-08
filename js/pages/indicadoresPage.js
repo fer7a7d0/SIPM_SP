@@ -14,6 +14,7 @@ const kpiDayHallazgos = document.getElementById("kpiDayHallazgos");
 const kpiWeekHallazgos = document.getElementById("kpiWeekHallazgos");
 const kpiMonthHallazgos = document.getElementById("kpiMonthHallazgos");
 const supervisorTableBody = document.querySelector("#supervisorTable tbody");
+const operatorTableBody = document.querySelector("#operatorTable tbody");
 const trendTableBody = document.querySelector("#trendTable tbody");
 const areaTableBody = document.querySelector("#areaTable tbody");
 const timeGlobal = document.getElementById("timeGlobal");
@@ -57,9 +58,36 @@ function renderSummary(summary) {
   kpiMonthHallazgos.textContent = String(month.hallazgosTotales ?? "-");
 
   renderSupervisorTable(summary.bySupervisor || []);
+  renderOperatorTable(summary.byOperator || []);
   renderTrendTable(summary.findingsTrend || []);
   renderAreaTable(summary.areaRanking || []);
   renderTimeMetrics(summary.timeMetrics || {});
+}
+
+function renderOperatorTable(rows) {
+  operatorTableBody.innerHTML = "";
+
+  if (!rows.length) {
+    operatorTableBody.innerHTML = '<tr><td colspan="5" class="text-muted">Sin datos</td></tr>';
+    return;
+  }
+
+  rows.forEach((row) => {
+    const areas = Array.isArray(row.areas) ? row.areas.join(", ") : "-";
+    const compliance = row.cumplimientoPct === null || row.cumplimientoPct === undefined
+      ? "-"
+      : `${row.cumplimientoPct}%`;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.operatorName || row.operatorId || "-"}</td>
+      <td>${areas || "-"}</td>
+      <td>${row.supervisionesFinalizadas ?? "-"}</td>
+      <td>${row.hallazgosTotales ?? "-"}</td>
+      <td>${compliance}</td>
+    `;
+    operatorTableBody.appendChild(tr);
+  });
 }
 
 function renderSupervisorTable(rows) {
