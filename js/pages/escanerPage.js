@@ -85,12 +85,15 @@ function setupQrMode() {
 }
 
 function setQrControlsEnabled(enabled) {
-  startCameraBtn.disabled = !enabled;
-  if (!enabled || isSupervisorMode) {
-    qrInput.disabled = true;
-  } else {
-    qrInput.disabled = false;
-  }
+  const canInteract = Boolean(enabled) && !isSubmitting;
+  const shouldDisableInput = isSupervisorMode || !canInteract || !gpsPosition;
+  const showCameraButtons = Boolean(gpsPosition) && !isSubmitting;
+
+  startCameraBtn.disabled = !canInteract || cameraActive;
+  stopCameraBtn.disabled = !canInteract || !cameraActive;
+  startCameraBtn.classList.toggle("d-none", !showCameraButtons);
+  stopCameraBtn.classList.toggle("d-none", !showCameraButtons || !cameraActive);
+  qrInput.disabled = shouldDisableInput;
 }
 
 async function captureGps() {
@@ -100,7 +103,7 @@ async function captureGps() {
     gpsPosition = await getCurrentPosition();
     gpsStatus.textContent = `GPS activo: ${formatGps(gpsPosition)} (±${Math.round(gpsPosition.accuracy)}m)`;
     setQrControlsEnabled(true);
-    setFlowState("ready", "GPS listo. Puedes iniciar la camara o ingresar el QR manualmente.");
+    setFlowState("ready", "GPS listo. Puedes usar la cámara o ingresar el QR manualmente.");
   } catch (error) {
     gpsPosition = null;
     setQrControlsEnabled(false);
@@ -145,6 +148,7 @@ async function onValidateAndStart(qrCode) {
 
   try {
     isSubmitting = true;
+    setQrControlsEnabled(Boolean(gpsPosition));
     lastProcessedQr = qrCode;
     setValidationState(true);
     setPreviewVisible(false);
@@ -175,6 +179,7 @@ async function onValidateAndStart(qrCode) {
   } finally {
     setPreviewVisible(false);
     isSubmitting = false;
+    setQrControlsEnabled(Boolean(gpsPosition));
   }
 }
 
@@ -226,9 +231,8 @@ async function startCamera() {
     );
 
     cameraActive = true;
-    startCameraBtn.disabled = true;
-    stopCameraBtn.disabled = false;
-    setFlowState("camera-active", "Camara activa. Escanea el QR o usa el codigo manualmente.");
+    setQrControlsEnabled(Boolean(gpsPosition));
+    setFlowState("camera-active", "Cámara lista. Enfoca el QR o usa el ingreso manual.");
   } catch (error) {
     setFlowState("error", "No se pudo iniciar la camara.");
     setMessage("No se pudo iniciar la camara.", "error");
@@ -252,10 +256,9 @@ async function stopCamera() {
 
   qrScanner = null;
   cameraActive = false;
-  startCameraBtn.disabled = false;
-  stopCameraBtn.disabled = true;
+  setQrControlsEnabled(Boolean(gpsPosition));
   setPreviewVisible(false);
-  setFlowState("ready", "Camara detenida. Puedes volver a iniciar cuando quieras.");
+  setFlowState("ready", "Cámara detenida. Puedes volver a iniciar cuando quieras.");
 }
 
 function setPreviewVisible(visible) {
