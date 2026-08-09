@@ -207,6 +207,7 @@ async function startCamera() {
   try {
     qrScanner = new window.Html5Qrcode("qrReader");
     setPreviewVisible(true);
+    setFlowState("camera-active", "Preparando camara... ");
     await qrScanner.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 240, height: 240 } },

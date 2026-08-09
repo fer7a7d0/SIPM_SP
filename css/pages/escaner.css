@@ -24,6 +24,10 @@
   display: none;
 }
 
+.qr-reader.is-ready {
+  display: block;
+}
+
 #qrInput,
 #gpsStatus,
 .card-soft,
