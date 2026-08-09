@@ -43,7 +43,8 @@ async function init() {
 
   setupQrMode();
   setQrControlsEnabled(false);
-  setPreviewVisible(false);
+  setPreviewVisible(true);
+  showScannerPlaceholder("Presiona iniciar cámara QR");
   setFlowState("waiting-gps", "Esperando ubicacion GPS...");
 
   startCameraBtn.addEventListener("click", startCamera);
@@ -205,6 +206,7 @@ async function startCamera() {
   }
 
   try {
+    showScannerPlaceholder("Iniciando cámara...");
     qrScanner = new window.Html5Qrcode("qrReader");
     setPreviewVisible(true);
     setFlowState("camera-active", "Preparando camara... ");
@@ -234,13 +236,16 @@ async function startCamera() {
 }
 
 async function stopCamera() {
-  if (!qrScanner || !cameraActive) {
+  if (!qrScanner && !cameraActive) {
+    setPreviewVisible(false);
     return;
   }
 
   try {
-    await qrScanner.stop();
-    await qrScanner.clear();
+    if (qrScanner) {
+      await qrScanner.stop();
+      await qrScanner.clear();
+    }
   } catch (error) {
     // Ignorado para no bloquear el flujo de captura.
   }
@@ -259,6 +264,22 @@ function setPreviewVisible(visible) {
   }
 
   qrReader.classList.toggle("is-hidden", !visible);
+  qrReader.style.display = visible ? "block" : "none";
+  if (!visible) {
+    qrReader.innerHTML = "";
+  }
+}
+
+function showScannerPlaceholder(message) {
+  if (!qrReader) {
+    return;
+  }
+
+  if (qrReader.innerHTML.trim()) {
+    return;
+  }
+
+  qrReader.innerHTML = `<div class="scanner-placeholder">${message}</div>`;
 }
 
 function setValidationState(enabled, success = false) {
