@@ -14,13 +14,6 @@ const qrReader = document.getElementById("qrReader");
 const gpsCard = gpsStatus.closest(".card");
 const scannerHint = document.getElementById("scannerHint");
 const scannerProgressBar = document.getElementById("scannerProgressBar");
-const scannerProcessingOverlay = document.getElementById("scannerProcessingOverlay");
-const scannerProcessingTitle = document.getElementById("scannerProcessingTitle");
-const scannerProcessingSubtitle = document.getElementById("scannerProcessingSubtitle");
-const scannerPreviewShell = document.getElementById("scannerPreviewShell");
-const scannerProcessingPanel = document.getElementById("scannerProcessingPanel");
-const scannerProcessingInlineTitle = document.getElementById("scannerProcessingInlineTitle");
-const scannerProcessingInlineSubtitle = document.getElementById("scannerProcessingInlineSubtitle");
 
 let activeSession = null;
 let gpsPosition = null;
@@ -50,6 +43,7 @@ async function init() {
 
   setupQrMode();
   setQrControlsEnabled(false);
+  setPreviewVisible(false);
   setFlowState("waiting-gps", "Esperando ubicacion GPS...");
 
   startCameraBtn.addEventListener("click", startCamera);
@@ -152,8 +146,7 @@ async function onValidateAndStart(qrCode) {
     isSubmitting = true;
     lastProcessedQr = qrCode;
     setValidationState(true);
-    setProcessingPanelVisible(true, "Validando área", "Se está confirmando la zona y el estado permanece visible.");
-    setProcessingOverlayVisible(true, "Validando área", "Se está confirmando la zona y el estado permanece visible.");
+    setPreviewVisible(false);
     setFlowState("validating", "Validando área...");
     setMessage("Validando área...", "");
 
@@ -161,8 +154,7 @@ async function onValidateAndStart(qrCode) {
 
     qrInput.value = qrCode;
     setValidationState(true, true);
-    setProcessingPanelVisible(true, "Iniciando supervisión", "Se está preparando el siguiente paso.");
-    setProcessingOverlayVisible(true, "Iniciando supervisión", "Se está preparando el siguiente paso.");
+    setPreviewVisible(false);
     setFlowState("launching", "Iniciando supervisión...");
     setMessage("Iniciando supervisión...", "success");
 
@@ -180,8 +172,7 @@ async function onValidateAndStart(qrCode) {
     setFlowState("error", error.message || "No se pudo iniciar supervision.");
     setMessage(error.message || "No se pudo iniciar supervision.", "error");
   } finally {
-    setProcessingPanelVisible(false);
-    setProcessingOverlayVisible(false);
+    setPreviewVisible(false);
     isSubmitting = false;
   }
 }
@@ -215,19 +206,15 @@ async function startCamera() {
 
   try {
     qrScanner = new window.Html5Qrcode("qrReader");
-    if (scannerPreviewShell) {
-      scannerPreviewShell.classList.add("is-active");
-    }
+    setPreviewVisible(true);
     await qrScanner.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 240, height: 240 } },
       (decodedText) => {
         qrInput.value = decodedText;
-        if (scannerPreviewShell) {
-          scannerPreviewShell.classList.remove("is-active");
-        }
-        setProcessingPanelVisible(true, "QR detectado", "Se cerró la vista previa y sigue visible el estado de procesamiento.");
-        setProcessingOverlayVisible(true, "QR detectado", "Se está validando el código y el estado sigue visible.");
+        setPreviewVisible(false);
+        setFlowState("validating", "QR detectado. Validando área...");
+        setMessage("QR detectado. Validando área...", "");
         void stopCamera().finally(() => {
           processQrCode(decodedText);
         });
@@ -261,7 +248,16 @@ async function stopCamera() {
   cameraActive = false;
   startCameraBtn.disabled = false;
   stopCameraBtn.disabled = true;
+  setPreviewVisible(false);
   setFlowState("ready", "Camara detenida. Puedes volver a iniciar cuando quieras.");
+}
+
+function setPreviewVisible(visible) {
+  if (!qrReader) {
+    return;
+  }
+
+  qrReader.classList.toggle("is-hidden", !visible);
 }
 
 function setValidationState(enabled, success = false) {
@@ -291,29 +287,6 @@ function setValidationState(enabled, success = false) {
       successAnimationTimer = null;
     }, 700);
   }
-}
-
-function setProcessingPanelVisible(visible, title = "Procesando escaneo", subtitle = "Se mantendrá visible el estado del flujo.") {
-  if (!scannerProcessingPanel || !scannerProcessingInlineTitle || !scannerProcessingInlineSubtitle) {
-    return;
-  }
-
-  scannerProcessingPanel.classList.toggle("is-visible", visible);
-  scannerProcessingInlineTitle.textContent = title;
-  scannerProcessingInlineSubtitle.textContent = subtitle;
-}
-
-function setProcessingOverlayVisible(visible, title = "Procesando escaneo", subtitle = "Se mantendrá visible el estado del flujo.") {
-  if (!scannerProcessingOverlay || !scannerProcessingTitle || !scannerProcessingSubtitle) {
-    return;
-  }
-
-  scannerProcessingOverlay.classList.toggle("is-visible", visible);
-  scannerProcessingOverlay.style.display = visible ? "flex" : "none";
-  scannerProcessingOverlay.style.visibility = visible ? "visible" : "hidden";
-  scannerProcessingOverlay.style.opacity = visible ? "1" : "0";
-  scannerProcessingTitle.textContent = title;
-  scannerProcessingSubtitle.textContent = subtitle;
 }
 
 function setFlowState(state, message) {
