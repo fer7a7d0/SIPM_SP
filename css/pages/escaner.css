@@ -23,14 +23,15 @@
 #qrInput {
   letter-spacing: 0.02em;
   border: 1px solid #d3e0dc;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
   box-shadow: inset 0 1px 2px rgba(24, 35, 33, 0.04);
+  min-height: 48px;
 }
 
 #qrInput:focus {
   border-color: #2f8f71;
-  box-shadow: 0 0 0 0.2rem rgba(47, 143, 113, 0.18);
+  box-shadow: 0 0 0 0.2rem rgba(47, 143, 113, 0.16);
 }
 
 .qr-reader {
@@ -44,10 +45,18 @@
   isolation: isolate;
   box-shadow: inset 0 1px 2px rgba(24, 35, 33, 0.04);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .qr-reader.is-hidden {
   display: none !important;
+}
+
+.qr-reader:empty {
+  border-style: dashed;
+  border-color: #cfded8;
 }
 
 .qr-reader.is-ready {
@@ -60,12 +69,12 @@
   width: 100%;
   height: 100%;
   min-height: 220px;
-  padding: 1rem;
+  padding: 1.2rem;
   text-align: center;
   color: #5d726c;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.95rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(240, 247, 244, 0.95));
+  background: transparent;
 }
 
 #qrInput,
@@ -172,7 +181,7 @@
 
 .scan-valid-soft {
   border-color: #c9d8d2 !important;
-  box-shadow: 0 10px 24px rgba(24, 35, 33, 0.08) !important;
+  box-shadow: none !important;
   background: rgba(255, 255, 255, 0.96) !important;
 }
 
