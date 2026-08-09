@@ -297,9 +297,9 @@ function setValidationState(enabled, success = false) {
     if (!element) {
       return;
     }
-    element.classList.toggle("scan-valid", enabled && (element === qrInput || element === qrReader));
+    element.classList.toggle("scan-valid", enabled && element === qrReader);
     element.classList.toggle("scan-valid-soft", enabled && (element === gpsCard || element === startCameraBtn || element === stopCameraBtn));
-    element.classList.toggle("scan-success", success && (element === qrInput || element === qrReader || element === gpsCard));
+    element.classList.toggle("scan-success", success && (element === qrReader || element === gpsCard));
   });
 
   if (success) {
