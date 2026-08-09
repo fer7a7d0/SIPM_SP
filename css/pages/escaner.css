@@ -52,10 +52,11 @@
   position: relative;
   isolation: isolate;
   box-shadow: inset 0 1px 2px rgba(24, 35, 33, 0.04);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: scanner-surface-idle 2.8s ease-in-out infinite;
 }
 
 .qr-reader.is-hidden {
@@ -83,6 +84,7 @@
   font-weight: 600;
   font-size: 0.95rem;
   background: transparent;
+  animation: scanner-placeholder-pulse 1.6s ease-in-out infinite;
 }
 
 #qrInput,
@@ -267,6 +269,26 @@
 .scan-success#validateQrBtn {
   transform: translateY(-1px) scale(1.005);
   box-shadow: 0 8px 18px rgba(31, 143, 95, 0.1);
+}
+
+@keyframes scanner-surface-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes scanner-placeholder-pulse {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes scan-success-pulse {
