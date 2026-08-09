@@ -24,6 +24,8 @@ let isSubmitting = false;
 let manualInputTimer = null;
 let lastProcessedQr = "";
 let successAnimationTimer = null;
+const MANUAL_QR_DEBOUNCE_MS = 1500;
+const MANUAL_QR_MIN_LENGTH = 8;
 
 function updateValidateButtonState() {
   // El flujo manual sigue usando el proceso de validación sin necesitar un botón visible.
@@ -49,7 +51,7 @@ async function init() {
 
   startCameraBtn.addEventListener("click", startCamera);
   stopCameraBtn.addEventListener("click", stopCamera);
-  qrInput.addEventListener("input", () => {
+  qrInput.addEventListener("input", (event) => {
     if (isSupervisorMode || !gpsPosition) {
       return;
     }
@@ -58,9 +60,20 @@ async function init() {
       window.clearTimeout(manualInputTimer);
     }
 
+    const currentValue = String(qrInput.value || "").trim();
+    const isPasteAction = event && event.inputType === "insertFromPaste";
+    if (isPasteAction && currentValue.length >= MANUAL_QR_MIN_LENGTH) {
+      processQrCode(currentValue);
+      return;
+    }
+
+    if (currentValue.length < MANUAL_QR_MIN_LENGTH) {
+      return;
+    }
+
     manualInputTimer = window.setTimeout(() => {
       processQrCode(String(qrInput.value || ""));
-    }, 700);
+    }, MANUAL_QR_DEBOUNCE_MS);
   });
   qrInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
