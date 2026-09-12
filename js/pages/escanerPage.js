@@ -25,6 +25,7 @@ let isSubmitting = false;
 let manualInputTimer = null;
 let lastProcessedQr = "";
 let successAnimationTimer = null;
+let knownQrCodes = new Set();
 const MANUAL_QR_DEBOUNCE_MS = 1500;
 const MANUAL_QR_MIN_LENGTH = 8;
 
@@ -63,7 +64,8 @@ async function init() {
 
     const currentValue = String(qrInput.value || "").trim();
     const isPasteAction = event && event.inputType === "insertFromPaste";
-    if (isPasteAction && currentValue.length >= MANUAL_QR_MIN_LENGTH) {
+    const isDatalistSelection = (event && event.inputType === "insertReplacementText") || knownQrCodes.has(currentValue);
+    if ((isPasteAction || isDatalistSelection) && currentValue.length >= MANUAL_QR_MIN_LENGTH) {
       processQrCode(currentValue);
       return;
     }
@@ -82,6 +84,19 @@ async function init() {
       processQrCode(String(qrInput.value || ""));
     }
   });
+  qrInput.addEventListener("change", () => {
+    if (isSupervisorMode || !gpsPosition) {
+      return;
+    }
+
+    const currentValue = String(qrInput.value || "").trim();
+    if (knownQrCodes.has(currentValue)) {
+      if (manualInputTimer) {
+        window.clearTimeout(manualInputTimer);
+      }
+      processQrCode(currentValue);
+    }
+  });
 
   await loadQrCodeOptions();
   await captureGps();
@@ -94,9 +109,11 @@ async function loadQrCodeOptions() {
   try {
     const areas = await listAvailableAreas(activeSession.token);
     qrCodeOptions.innerHTML = "";
+    knownQrCodes = new Set();
     areas
       .filter((area) => area.qrCode)
       .forEach((area) => {
+        knownQrCodes.add(String(area.qrCode).trim());
         const option = document.createElement("option");
         option.value = area.qrCode;
         option.label = area.name;
