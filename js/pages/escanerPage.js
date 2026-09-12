@@ -2,10 +2,11 @@ import "../router.js";
 import { ROUTES } from "../config.js";
 import { getSession } from "../services/authService.js";
 import { validateQrCode } from "../services/qrService.js";
-import { startSupervision } from "../services/supervisionService.js";
+import { listAvailableAreas, startSupervision } from "../services/supervisionService.js";
 import { formatGps, getCurrentPosition } from "../utils/geo.js";
 
 const qrInput = document.getElementById("qrInput");
+const qrCodeOptions = document.getElementById("qrCodeOptions");
 const gpsStatus = document.getElementById("gpsStatus");
 const scannerMessage = document.getElementById("scannerMessage");
 const startCameraBtn = document.getElementById("startCameraBtn");
@@ -82,10 +83,28 @@ async function init() {
     }
   });
 
+  await loadQrCodeOptions();
   await captureGps();
   window.addEventListener("beforeunload", () => {
     stopCamera();
   });
+}
+
+async function loadQrCodeOptions() {
+  try {
+    const areas = await listAvailableAreas(activeSession.token);
+    qrCodeOptions.innerHTML = "";
+    areas
+      .filter((area) => area.qrCode)
+      .forEach((area) => {
+        const option = document.createElement("option");
+        option.value = area.qrCode;
+        option.label = area.name;
+        qrCodeOptions.appendChild(option);
+      });
+  } catch (error) {
+    // El datalist queda vacio si no se pueden cargar las areas.
+  }
 }
 
 function setupQrMode() {
