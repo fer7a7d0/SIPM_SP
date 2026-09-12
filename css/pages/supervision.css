@@ -34,7 +34,7 @@
 
 .section-card {
   display: grid;
-  gap: 16px;
+  gap: 20px;
   border-top: 1px solid #d6e0dd;
   padding-top: 18px;
   margin-top: 18px;
