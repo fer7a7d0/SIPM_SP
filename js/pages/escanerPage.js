@@ -6,7 +6,6 @@ import { listAvailableAreas, startSupervision } from "../services/supervisionSer
 import { formatGps, getCurrentPosition } from "../utils/geo.js";
 
 const qrInput = document.getElementById("qrInput");
-const qrCodeOptions = document.getElementById("qrCodeOptions");
 const gpsStatus = document.getElementById("gpsStatus");
 const scannerMessage = document.getElementById("scannerMessage");
 const startCameraBtn = document.getElementById("startCameraBtn");
@@ -22,12 +21,8 @@ let qrScanner = null;
 let cameraActive = false;
 let isSupervisorMode = false;
 let isSubmitting = false;
-let manualInputTimer = null;
 let lastProcessedQr = "";
 let successAnimationTimer = null;
-let knownQrCodes = new Set();
-const MANUAL_QR_DEBOUNCE_MS = 1500;
-const MANUAL_QR_MIN_LENGTH = 8;
 
 function updateValidateButtonState() {
   // El flujo manual sigue usando el proceso de validación sin necesitar un botón visible.
@@ -53,48 +48,10 @@ async function init() {
 
   startCameraBtn.addEventListener("click", startCamera);
   stopCameraBtn.addEventListener("click", stopCamera);
-  qrInput.addEventListener("input", (event) => {
-    if (isSupervisorMode || !gpsPosition) {
-      return;
-    }
-
-    if (manualInputTimer) {
-      window.clearTimeout(manualInputTimer);
-    }
-
-    const currentValue = String(qrInput.value || "").trim();
-    const isPasteAction = event && event.inputType === "insertFromPaste";
-    const isDatalistSelection = (event && event.inputType === "insertReplacementText") || knownQrCodes.has(currentValue);
-    if ((isPasteAction || isDatalistSelection) && currentValue.length >= MANUAL_QR_MIN_LENGTH) {
-      processQrCode(currentValue);
-      return;
-    }
-
-    if (currentValue.length < MANUAL_QR_MIN_LENGTH) {
-      return;
-    }
-
-    manualInputTimer = window.setTimeout(() => {
-      processQrCode(String(qrInput.value || ""));
-    }, MANUAL_QR_DEBOUNCE_MS);
-  });
-  qrInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      processQrCode(String(qrInput.value || ""));
-    }
-  });
   qrInput.addEventListener("change", () => {
-    if (isSupervisorMode || !gpsPosition) {
-      return;
-    }
-
-    const currentValue = String(qrInput.value || "").trim();
-    if (knownQrCodes.has(currentValue)) {
-      if (manualInputTimer) {
-        window.clearTimeout(manualInputTimer);
-      }
-      processQrCode(currentValue);
+    const selectedValue = String(qrInput.value || "").trim();
+    if (selectedValue) {
+      processQrCode(selectedValue);
     }
   });
 
@@ -108,29 +65,22 @@ async function init() {
 async function loadQrCodeOptions() {
   try {
     const areas = await listAvailableAreas(activeSession.token);
-    qrCodeOptions.innerHTML = "";
-    knownQrCodes = new Set();
+    qrInput.innerHTML = '<option value="">Selecciona un area...</option>';
     areas
       .filter((area) => area.qrCode)
       .forEach((area) => {
-        knownQrCodes.add(String(area.qrCode).trim());
         const option = document.createElement("option");
         option.value = area.qrCode;
-        option.label = area.name;
-        qrCodeOptions.appendChild(option);
+        option.textContent = area.name;
+        qrInput.appendChild(option);
       });
   } catch (error) {
-    // El datalist queda vacio si no se pueden cargar las areas.
+    // La lista queda con el placeholder si no se pueden cargar las areas.
   }
 }
 
 function setupQrMode() {
-  qrInput.readOnly = isSupervisorMode;
-  if (isSupervisorMode) {
-    qrInput.placeholder = "Lectura por camara habilitada para supervisor";
-  } else {
-    qrInput.placeholder = "Escanea o pega el codigo";
-  }
+  qrInput.disabled = isSupervisorMode;
 }
 
 function setQrControlsEnabled(enabled) {
