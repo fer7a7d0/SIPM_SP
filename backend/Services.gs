@@ -125,6 +125,7 @@ function dashboardKpiSummaryService(payload) {
     findingsTrend: buildFindingsTrend(enriched, weekStartKey, todayKey),
     areaRanking: buildAreaRanking(monthSlice),
     findingTypeRanking: buildFindingTypeRanking(answers, monthSlice),
+    findingRanking: buildFindingRanking(answers, monthSlice),
     timeMetrics: buildTimeMetrics(monthSlice)
   };
 }
@@ -530,6 +531,44 @@ function buildFindingTypeRanking(answers, monthItems) {
       return b.hallazgos - a.hallazgos;
     }
     return String(a.category || "").localeCompare(String(b.category || ""));
+  });
+
+  return rows.slice(0, 10);
+}
+
+function buildFindingRanking(answers, monthItems) {
+  var monthSupervisionIds = {};
+  var byFinding = {};
+
+  for (var i = 0; i < monthItems.length; i += 1) {
+    monthSupervisionIds[String(monthItems[i].id || "").trim()] = true;
+  }
+
+  for (var j = 0; j < answers.length; j += 1) {
+    var answer = answers[j];
+    var supervisionId = String(answer.supervisionId || "").trim();
+    var response = String(answer.response || "").trim().toLowerCase();
+
+    if (!monthSupervisionIds[supervisionId] || response !== "no cumple") {
+      continue;
+    }
+
+    var finding = String(answer.questionText || "").trim() || "Hallazgo sin detalle";
+    byFinding[finding] = Number(byFinding[finding] || 0) + 1;
+  }
+
+  var rows = Object.keys(byFinding).map(function (finding) {
+    return {
+      finding: finding,
+      hallazgos: byFinding[finding]
+    };
+  });
+
+  rows.sort(function (a, b) {
+    if (b.hallazgos !== a.hallazgos) {
+      return b.hallazgos - a.hallazgos;
+    }
+    return String(a.finding || "").localeCompare(String(b.finding || ""));
   });
 
   return rows.slice(0, 10);

@@ -21,6 +21,7 @@ const trendChartSummary = document.getElementById("trendChartSummary");
 const areaTableBody = document.querySelector("#areaTable tbody");
 const operatorRankingTableBody = document.querySelector("#operatorRankingTable tbody");
 const findingTypeRankingTableBody = document.querySelector("#findingTypeRankingTable tbody");
+const findingRankingTableBody = document.querySelector("#findingRankingTable tbody");
 const timeGlobal = document.getElementById("timeGlobal");
 const timeBySupervisorTableBody = document.querySelector("#timeBySupervisorTable tbody");
 
@@ -67,7 +68,26 @@ function renderSummary(summary) {
   renderAreaTable(summary.areaRanking || []);
   renderOperatorRankingTable(summary.operatorRanking || []);
   renderFindingTypeRankingTable(summary.findingTypeRanking || []);
+  renderFindingRankingTable(summary.findingRanking || []);
   renderTimeMetrics(summary.timeMetrics || {});
+}
+
+function renderFindingRankingTable(rows) {
+  findingRankingTableBody.innerHTML = "";
+
+  if (!rows.length) {
+    findingRankingTableBody.innerHTML = '<tr><td colspan="2" class="text-muted">Sin datos</td></tr>';
+    return;
+  }
+
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.finding || "Hallazgo sin detalle"}</td>
+      <td>${row.hallazgos ?? "-"}</td>
+    `;
+    findingRankingTableBody.appendChild(tr);
+  });
 }
 
 function renderFindingTypeRankingTable(rows) {

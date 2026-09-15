@@ -224,6 +224,15 @@
   color: #4f4a82;
 }
 
+#findingRankingKpiBlock {
+  border-color: #75a8a4;
+  background: linear-gradient(180deg, #e9f8f6 0%, #f5fcfb 100%);
+}
+
+#findingRankingKpiBlock .title-sm {
+  color: #1f625e;
+}
+
 #timeKpiBlock {
   border-color: #7db8bc;
   background: linear-gradient(180deg, #eaf9fa 0%, #f4feff 100%);
@@ -595,6 +604,15 @@
 
   #findingTypeRankingKpiBlock .title-sm {
     color: #cbc9ff;
+  }
+
+  #findingRankingKpiBlock {
+    border-color: #3d7470;
+    background: linear-gradient(180deg, #153532 0%, #17302e 100%);
+  }
+
+  #findingRankingKpiBlock .title-sm {
+    color: #a5e0da;
   }
 
   #timeKpiBlock {
