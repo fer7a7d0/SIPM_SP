@@ -362,9 +362,17 @@ function buildOperatorMetrics(items) {
   });
 
   rows.sort(function (a, b) {
-    if (Number(b.supervisionesFinalizadas || 0) !== Number(a.supervisionesFinalizadas || 0)) {
-      return Number(b.supervisionesFinalizadas || 0) - Number(a.supervisionesFinalizadas || 0);
+    var aCompliance = a.cumplimientoPct === null ? -1 : Number(a.cumplimientoPct);
+    var bCompliance = b.cumplimientoPct === null ? -1 : Number(b.cumplimientoPct);
+
+    if (bCompliance !== aCompliance) {
+      return bCompliance - aCompliance;
     }
+
+    if (Number(b.preguntasEvaluables || 0) !== Number(a.preguntasEvaluables || 0)) {
+      return Number(b.preguntasEvaluables || 0) - Number(a.preguntasEvaluables || 0);
+    }
+
     return String(a.operatorName || "").localeCompare(String(b.operatorName || ""));
   });
 

@@ -135,7 +135,26 @@ function renderOperatorTable(rows) {
     return;
   }
 
-  rows.forEach((row) => {
+  const sortedRows = [...rows].sort((a, b) => {
+    const aCompliance = a.cumplimientoPct === null || a.cumplimientoPct === undefined
+      ? -1
+      : Number(a.cumplimientoPct);
+    const bCompliance = b.cumplimientoPct === null || b.cumplimientoPct === undefined
+      ? -1
+      : Number(b.cumplimientoPct);
+
+    if (bCompliance !== aCompliance) {
+      return bCompliance - aCompliance;
+    }
+
+    if (Number(b.preguntasEvaluables || 0) !== Number(a.preguntasEvaluables || 0)) {
+      return Number(b.preguntasEvaluables || 0) - Number(a.preguntasEvaluables || 0);
+    }
+
+    return String(a.operatorName || a.operatorId || "").localeCompare(String(b.operatorName || b.operatorId || ""));
+  });
+
+  sortedRows.forEach((row) => {
     const compliance = row.cumplimientoPct === null || row.cumplimientoPct === undefined
       ? "-"
       : `${row.cumplimientoPct}%`;
