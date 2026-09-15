@@ -215,6 +215,15 @@
   color: #874135;
 }
 
+#findingTypeRankingKpiBlock {
+  border-color: #9e9ac9;
+  background: linear-gradient(180deg, #f2f1ff 0%, #faf9ff 100%);
+}
+
+#findingTypeRankingKpiBlock .title-sm {
+  color: #4f4a82;
+}
+
 #timeKpiBlock {
   border-color: #7db8bc;
   background: linear-gradient(180deg, #eaf9fa 0%, #f4feff 100%);
@@ -577,6 +586,15 @@
 
   #operatorRankingKpiBlock .title-sm {
     color: #efb7ab;
+  }
+
+  #findingTypeRankingKpiBlock {
+    border-color: #5e5c8a;
+    background: linear-gradient(180deg, #252440 0%, #202039 100%);
+  }
+
+  #findingTypeRankingKpiBlock .title-sm {
+    color: #cbc9ff;
   }
 
   #timeKpiBlock {

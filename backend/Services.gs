@@ -86,7 +86,8 @@ function dashboardKpiSummaryService(payload) {
     return compareDateKeys(item.fecha, effectiveStartKey) >= 0 && compareDateKeys(item.fecha, todayKey) <= 0;
   });
 
-  var answersBySupervision = buildAnswerAggregatesBySupervision(listAllAnswers());
+  var answers = listAllAnswers();
+  var answersBySupervision = buildAnswerAggregatesBySupervision(answers);
   var enriched = supervisions.map(function (item) {
     var agg = answersBySupervision[item.id] || emptyAnswerAggregate();
     return {
@@ -123,6 +124,7 @@ function dashboardKpiSummaryService(payload) {
     operatorRanking: buildOperatorRanking(monthSlice),
     findingsTrend: buildFindingsTrend(enriched, weekStartKey, todayKey),
     areaRanking: buildAreaRanking(monthSlice),
+    findingTypeRanking: buildFindingTypeRanking(answers, monthSlice),
     timeMetrics: buildTimeMetrics(monthSlice)
   };
 }
@@ -490,6 +492,44 @@ function buildAreaRanking(items) {
       return b.hallazgos - a.hallazgos;
     }
     return String(a.areaName || "").localeCompare(String(b.areaName || ""));
+  });
+
+  return rows.slice(0, 10);
+}
+
+function buildFindingTypeRanking(answers, monthItems) {
+  var monthSupervisionIds = {};
+  var byCategory = {};
+
+  for (var i = 0; i < monthItems.length; i += 1) {
+    monthSupervisionIds[String(monthItems[i].id || "").trim()] = true;
+  }
+
+  for (var j = 0; j < answers.length; j += 1) {
+    var answer = answers[j];
+    var supervisionId = String(answer.supervisionId || "").trim();
+    var response = String(answer.response || "").trim().toLowerCase();
+
+    if (!monthSupervisionIds[supervisionId] || response !== "no cumple") {
+      continue;
+    }
+
+    var category = String(answer.category || "").trim() || "Sin categoria";
+    byCategory[category] = Number(byCategory[category] || 0) + 1;
+  }
+
+  var rows = Object.keys(byCategory).map(function (category) {
+    return {
+      category: category,
+      hallazgos: byCategory[category]
+    };
+  });
+
+  rows.sort(function (a, b) {
+    if (b.hallazgos !== a.hallazgos) {
+      return b.hallazgos - a.hallazgos;
+    }
+    return String(a.category || "").localeCompare(String(b.category || ""));
   });
 
   return rows.slice(0, 10);
