@@ -51,6 +51,13 @@
   min-width: 0;
 }
 
+.dashboard-analysis-layout,
+.dashboard-ranking-grid {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
 .inicio-brand {
   min-width: 0;
 }
@@ -327,7 +334,9 @@
   .dashboard-summary-grid,
   .dashboard-two-column-grid,
   .dashboard-two-column-grid-wide-first,
-  .dashboard-stack-grid {
+  .dashboard-stack-grid,
+  .dashboard-analysis-layout,
+  .dashboard-ranking-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -419,6 +428,11 @@
   .dashboard-summary-grid,
   .dashboard-two-column-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-ranking-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
   }
 
   .dashboard-two-column-grid-wide-first {
